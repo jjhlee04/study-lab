@@ -4,7 +4,7 @@ rows=[]
 def add(unit,body):
     for n,line in enumerate(body.strip().splitlines(),1):
         title,explain,question,correct,wrong=line.split('|')
-        rows.append(dict(unit=unit,page=n,title=title,explain=explain.split(' / '),quiz=dict(question=question,options=[correct]+wrong.split('~'),answer=0,why=explain.split(' / ')[-1])))
+        rows.append(dict(unit=unit,page=n,title=title,explain=explain.split(' / '),quiz=dict(question=question,options=[correct]+wrong.split('~'),answer=0,why=' '.join(explain.split(' / ')))))
 add('w01',r'''
 교과목 운영 안내|이 페이지는 교과목 운영 안내를 여는 표지다. 함수나 코드가 제시된 본문 페이지와 구분해서 보자. / 다음 페이지부터 강의 계획·학습 목표·평가 방식이 이어지고, 20쪽부터 Linux 소개로 전환된다. 표지에 없는 시험 출제 비중이나 교수의 구두 설명은 추정하지 않는다.|이 페이지의 성격은?|교과목 운영 안내의 표지|open 함수 명세~inode 구조 설명~중간고사 정답표
 강의 계획|자료는 부교재로 로버트 러브의 리눅스 시스템프로그래밍과 창병모의 리눅스 프로그래밍을 소개한다. 교재는 구매하지 않아도 된다고 명시한다. / 강의 자료를 받는 곳은 온라인강의실이다. 이 교재의 범위는 제공된 두 PDF로 고정하며 부교재 전체를 시험범위로 확장하지 않는다.|자료에 적힌 교재 안내는?|구매하지 않아도 됨|두 권 모두 필수 구매~교재만 시험범위~부교재는 사용 금지
