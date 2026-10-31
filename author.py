@@ -7,7 +7,7 @@ def add(unit,body):
         rows.append(dict(unit=unit,page=n,title=title,explain=explain.split(' / '),quiz=dict(question=question,options=[correct]+wrong.split('~'),answer=0,why=' '.join(explain.split(' / ')))))
 add('w01',r'''
 교과목 운영 안내|이 페이지는 교과목 운영 안내를 여는 표지다. 함수나 코드가 제시된 본문 페이지와 구분해서 보자. / 다음 페이지부터 강의 계획·학습 목표·평가 방식이 이어지고, 20쪽부터 Linux 소개로 전환된다. 표지에 없는 시험 출제 비중이나 교수의 구두 설명은 추정하지 않는다.|이 페이지의 성격은?|교과목 운영 안내의 표지|open 함수 명세~inode 구조 설명~중간고사 정답표
-강의 계획|자료는 부교재로 로버트 러브의 리눅스 시스템프로그래밍과 창병모의 리눅스 프로그래밍을 소개한다. 교재는 구매하지 않아도 된다고 명시한다. / 강의 자료를 받는 곳은 온라인강의실이다. 이 교재의 범위는 제공된 두 PDF로 고정하며 부교재 전체를 시험범위로 확장하지 않는다.|자료에 적힌 교재 안내는?|구매하지 않아도 됨|두 권 모두 필수 구매~교재만 시험범위~부교재는 사용 금지
+강의 계획|자료는 부교재로 로버트 러브의 리눅스 시스템프로그래밍과 창병모의 리눅스 프로그래밍을 소개한다. 교재는 구매하지 않아도 된다고 명시한다. / 강의 자료를 받는 곳은 온라인강의실이다. 이 교재의 범위는 제공된 세 PDF로 고정하며 부교재 전체를 시험범위로 확장하지 않는다.|자료에 적힌 교재 안내는?|구매하지 않아도 됨|두 권 모두 필수 구매~교재만 시험범위~부교재는 사용 금지
 강의 목표|핵심 목표는 Linux에 대한 프로그래밍 인터페이스를 이해하는 것이다. 시스템 호출의 open·read·write와 표준 C 라이브러리의 fopen·fprintf가 나란히 제시된다. / 함수 이름을 비슷하게 외우기보다 접근 계층을 구분하자. 시스템 호출은 커널 서비스의 경계이고 표준 입출력 라이브러리는 사용자 공간 버퍼링 등을 제공한다. C 프로그래밍과 기본 Linux 명령 조작이 기초 능력이다.|시스템 호출 예로 제시된 함수는?|open|fopen~fprintf~printf
 평가 항목 및 비율|자료에는 출석 10%, 과제 20%, 중간고사 35%, 기말고사 35%로 적혀 있다. 중간은 8주차, 기말은 15주차로 제시된다. / 지각은 20분 이내 인정 및 1점 감점, 결석은 2점, 대리출석·무단이탈은 3점 감점이라고 적혀 있다. 이는 업로드 당시 자료의 안내이며 변경 공지를 확인한 것으로 해석하지 않는다.|원문에 적힌 중간고사 비율은?|35%|10%~20%~50%
 문의 방식|이 페이지는 이메일 문의 방식과 제목 형식을 안내한다. 제목은 [시립대] 뒤에 본인 이름을 넣는 형태다. / 학습 개념 페이지와 운영 안내를 구분해 읽자. 이 페이지로부터 교수의 시험 문제나 채점 의도를 유추할 수는 없다.|원문의 이메일 제목에 포함되는 것은?|[시립대]와 본인 이름|파일 디스크립터 번호~inode 번호~커널 버전만
@@ -121,5 +121,6 @@ for unit in ['w01','w06']:
         row['reviewed']=True
         dest=R/'dist'/row['image'];dest.parent.mkdir(exist_ok=True)
         if not dest.exists(): shutil.copy2(R/'review'/f"{unit}-{row['page']:02}.jpg",dest)
+if (R/'w02-lessons.json').exists(): rows=sorted(rows+json.loads((R/'w02-lessons.json').read_text(encoding='utf-8')),key=lambda x:(x['unit'],x['page']))
 (R/'dist'/'data.js').write_text('window.LESSONS='+json.dumps(rows,ensure_ascii=False)+';',encoding='utf-8')
 print('Authored',len(rows),'page lessons and quizzes')
