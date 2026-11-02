@@ -5,4 +5,4 @@
 @media(prefers-reduced-motion:reduce){.s-side{transition:none}}
 @media(max-width:760px){.s-side{visibility:hidden}body.s-menu-open .s-side{visibility:visible}#sidebar{visibility:hidden}body.menu-open #sidebar{visibility:visible}}
 
-.s-brand .s-icon{fill:currentColor;stroke:none}
+#school-app .s-brand .s-icon{fill:currentColor;stroke:none}
