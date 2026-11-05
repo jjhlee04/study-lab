@@ -13,8 +13,9 @@ const UNIX_SKIP=new Set(['w01-1','w01-2','w01-4','w01-5','w01-13','w01-20','w02-
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
 
-let db={settings:{},current:{},wrong:{},history:{}};
+let db={settings:{},current:{},wrong:{},history:{},srs:{},dates:{}};
 try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&typeof v==='object')db={...db,...v};}catch{}
+db.srs??={};db.dates??={};
 let saveFailed=false;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(db));saveFailed=false;}catch{saveFailed=true;}}
 
@@ -69,6 +70,34 @@ function userText(item,ans,ex){
   if(item.type==='tf')return ans==='true'?'참 (O)':'거짓 (X)';
   return ans;
 }
+
+
+/* ── 페이지 퀴즈 기록 읽기 (기존 저장 키를 읽기만 함) ── */
+const DAY=86400000,INTERVALS=[1,3,7,14];
+const readJSON=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')||{};}catch{return {};}};
+const PREFIX={'discrete-math':'dm','data-communication':'dc'};
+function pageQuizWrongs(courseId){
+  const out=[];
+  if(courseId==='unix'){const a=readJSON('unix-lab-progress-v1').answers||{};for(const l of window.LESSONS||[]){const r=a[l.id];if(r&&!r.correct&&!UNIX_SKIP.has(l.id))out.push('ux-mc-'+l.id);}return out;}
+  const rec=readJSON('course-study-v1').pages||{};
+  for(const ch of window.COURSE_CHAPTERS||[]){if((ch.course||'programming-languages')!==courseId)continue;ch.pages.forEach(p=>{const r=rec[`${courseId}:${ch.id}:${p.page}`];if(r&&r.answer!==undefined&&r.answer!==0&&p.quiz&&p.kind!=='structure')out.push((PREFIX[courseId]||'pl')+'-mc-'+ch.id+'-'+p.page);});}
+  return out.filter(byId);
+}
+function doneSet(courseId){
+  const s=new Set();
+  if(courseId==='unix'){for(const id of readJSON('unix-lab-progress-v1').done||[]){const [u,n]=String(id).split('-');s.add(`unix-${u}:${n}`);}return s;}
+  const rec=readJSON('course-study-v1').pages||{};for(const [k,v] of Object.entries(rec)){if(v&&v.done&&k.startsWith(courseId+':'))s.add(k.slice(courseId.length+1));}
+  return s;
+}
+function pageCount(mid){const ch=(window.COURSE_CHAPTERS||[]).find(c=>c.id===mid);if(ch)return ch.pages.length;if(mid.startsWith('unix-'))return (window.LESSONS||[]).filter(l=>'unix-'+l.unit===mid).length;return 0;}
+function srsUpdate(id,ok,fromPage){const now=Date.now(),e=db.srs[id];if(ok){if(!e){if(fromPage)db.srs[id]={step:1,due:now+INTERVALS[1]*DAY};return;}if(e.done)return;const step=e.step+1;db.srs[id]=step>=INTERVALS.length?{step,done:true}:{step,due:now+INTERVALS[step]*DAY};}else db.srs[id]={step:0,due:now+DAY};}
+function dueIds(courseId){const now=Date.now(),ids=new Set();
+  for(const id of pageQuizWrongs(courseId))if(!db.srs[id])ids.add(id);
+  for(const [id,e] of Object.entries(db.srs)){const it=byId(id);if(it&&it.course===courseId&&!e.done&&e.due<=now)ids.add(id);}
+  return [...ids];}
+function startExam(courseId,ids,label){if(!ids.length)return false;makeExam(courseId,shuffle(ids),label);const h='#/course/'+encodeURIComponent(courseId)+'/exams';if(location.hash===h){const r=q('#mx-root');if(r&&ctx){renderExam(r);r.scrollIntoView({block:'start'});}}else location.hash=h;return true;}
+function dday(courseId,type){const d=db.dates[courseId]?.[type];if(!d)return null;const t=new Date(d+'T00:00:00'),today=new Date();today.setHours(0,0,0,0);return Math.round((t-today)/DAY);}
+function scopeStatus(courseId,type){const sc=scopeOf(courseId,type);if(!sc)return null;const done=doneSet(courseId);let total=0,seen=0;for(const [mid,pages] of Object.entries(sc)){const list=pages||Array.from({length:pageCount(mid)},(_,i)=>i+1);total+=list.length;for(const n of list)if(done.has(`${mid}:${n}`))seen++;}return {total,seen,left:total-seen};}
 
 /* ── 범위 ── */
 function scopeOf(courseId,mode){
@@ -131,7 +160,8 @@ function renderSetup(root){
   const avail=m=>{const p=pool(c.id,m);return Object.fromEntries(TYPES.map(([t])=>[t,p.filter(x=>x.type===t).length]));};
   const av=avail(st.mode),total=TYPES.reduce((s,[t])=>s+Math.min(+st.counts[t]||0,av[t]),0);
   const wn=wrongIds(c.id).length,hist=(db.history[c.id]||[]).slice(-5).reverse();
-  root.innerHTML=`<section class="s-section mx"><h2>모의고사</h2>
+  const due=dueIds(c.id).length,dd=['mid','final'].map(t=>({t,n:dday(c.id,t),st:scopeStatus(c.id,t),date:db.dates[c.id]?.[t]||''}));
+  root.innerHTML=`<section class="s-section mx mx-plan"><h2>시험 일정과 오늘의 복습</h2><div class="mx-plan-grid">${dd.map(x=>`<div class="mx-plan-card"><label>${x.t==='mid'?'중간고사':'기말고사'} 날짜<input type="date" data-date="${x.t}" value="${e(x.date)}"></label>${x.n===null?'<p class="mx-small">날짜를 입력하면 남은 날과 하루 학습량을 계산합니다.</p>':`<p class="mx-dday">${x.n>0?'D-'+x.n:x.n===0?'D-day':'D+'+(-x.n)}</p>${x.st?`<p class="mx-small">범위 ${x.st.total}쪽 중 학습 완료 ${x.st.seen}쪽 · 남은 ${x.st.left}쪽${x.n>0?` → 하루 ${Math.ceil(x.st.left/x.n)}쪽`:''}</p>`:'<p class="mx-small">이 시험의 범위가 아직 지정되지 않았습니다.</p>'}`}</div>`).join('')}<div class="mx-plan-card"><p class="mx-dday">${due}</p><p class="mx-small">오늘 복습할 문제 (틀린 문제를 1·3·7·14일 뒤에 다시)</p>${due?'<button type="button" class="s-btn teal" id="mx-due">오늘의 복습 시작</button>':''}</div></div></section><section class="s-section mx"><h2>모의고사</h2>
   <p class="mx-lead">강의자료 범위에서 문제를 뽑아 한 번에 풉니다. 제출하기 전에는 정답이 보이지 않고, 제출하면 자동 채점과 해설, 근거 페이지가 나옵니다.</p>
   <form id="mx-setup" class="mx-setup">
     <fieldset class="mx-modes"><legend>출제 범위</legend>${modes.map(([m,n])=>{const ok=m==='all'||scopeOf(c.id,m)!==undefined;return `<label class="${ok?'':'mx-off'}"><input type="radio" name="mode" value="${m}" ${st.mode===m?'checked':''} ${ok?'':'disabled'}> ${n}${ok?'':' <small>(시험범위 미지정)</small>'}</label>`;}).join('')}</fieldset>
@@ -146,6 +176,8 @@ function renderSetup(root){
   <details class="mx-help"><summary>채점 방식 안내</summary><p>단답형과 실행 결과 예측은 대소문자·띄어쓰기·따옴표·마침표·괄호를 무시하고 인정 답안 목록과 비교합니다. 같은 뜻인데 오답 처리되면 결과 화면에서 직접 정답으로 인정할 수 있습니다. 추가 문항은 모두 표시된 근거 페이지의 내용으로 만들었으며, 실제 시험 출제 범위나 비중을 뜻하지 않습니다.</p></details>
   ${saveFailed?'<p class="mx-warn">브라우저 저장에 실패했습니다. 새로고침하면 진행 상황이 사라질 수 있습니다.</p>':''}
   </section>`;
+  qa('[data-date]',root).forEach(i=>i.onchange=()=>{db.dates[c.id]??={};db.dates[c.id][i.dataset.date]=i.value;save();renderSetup(root);});
+  if(q('#mx-due'))q('#mx-due').onclick=()=>startExam(c.id,dueIds(c.id),'오늘의 복습');
   const form=q('#mx-setup');
   const read=()=>{const f=new FormData(form);return{mode:f.get('mode')||'all',counts:Object.fromEntries(TYPES.map(([t])=>[t,Math.max(0,parseInt(f.get(t))||0)]))};};
   const persist=()=>{db.settings[c.id]=read();save();};
@@ -199,7 +231,7 @@ function submit(courseId,cur,items){
   cur.submitted=true;cur.submittedAt=Date.now();
   const w=db.wrong[courseId]||(db.wrong[courseId]={});
   let score=0;
-  for(const it of items){const ok=isCorrect(it,cur.answers[it.id]);if(ok){score++;delete w[it.id];}else{w[it.id]={count:(w[it.id]?.count||0)+1,last:Date.now()};}}
+  const pqw=new Set(pageQuizWrongs(courseId));for(const it of items){const ok=isCorrect(it,cur.answers[it.id]);srsUpdate(it.id,ok,pqw.has(it.id));if(ok){score++;delete w[it.id];}else{w[it.id]={count:(w[it.id]?.count||0)+1,last:Date.now()};}}
   cur.score=score;
   (db.history[courseId]||(db.history[courseId]=[])).push({at:Date.now(),label:cur.label,score,total:items.length});
   db.history[courseId]=db.history[courseId].slice(-30);
@@ -222,15 +254,27 @@ function renderResult(root,cur){
   q('#mx-only-wrong').onchange=ev=>qa('.mx-q',root).forEach(a=>a.hidden=ev.target.checked&&a.dataset.good==='true');
   q('#mx-new').onclick=()=>{delete db.current[c.id];save();renderExam(root);root.scrollIntoView({block:'start'});};
   if(q('#mx-redo-wrong'))q('#mx-redo-wrong').onclick=()=>{makeExam(c.id,items.filter(it=>!ok(it)).map(it=>it.id),'틀린 문제 다시 풀기');renderExam(root);root.scrollIntoView({block:'start'});};
-  qa('[data-accept]',root).forEach(b=>b.onclick=()=>{const id=b.dataset.accept;cur.overrides[id]=true;if(db.wrong[c.id])delete db.wrong[c.id][id];const h=db.history[c.id];if(h&&h.length&&h[h.length-1].total===items.length)h[h.length-1].score=items.filter(ok).length;save();const y=window.scrollY;renderResult(root,cur);window.scrollTo(0,y);});
+  qa('[data-accept]',root).forEach(b=>b.onclick=()=>{const id=b.dataset.accept;cur.overrides[id]=true;if(db.wrong[c.id])delete db.wrong[c.id][id];if(db.srs[id]&&db.srs[id].step===0&&!db.srs[id].done)delete db.srs[id];const h=db.history[c.id];if(h&&h.length&&h[h.length-1].total===items.length)h[h.length-1].score=items.filter(ok).length;save();const y=window.scrollY;renderResult(root,cur);window.scrollTo(0,y);});
 }
 
 function renderWrong(root){
   const c=ctx.course;if(!courseHasBank(c.id)){root.innerHTML='';return;}
-  const w=db.wrong[c.id]||{},items=wrongIds(c.id).map(byId).sort((a,b)=>(w[b.id].count-w[a.id].count)||(w[b.id].last-w[a.id].last));
-  root.innerHTML=`<section class="s-section mx"><h2>모의고사 오답</h2><p>모의고사에서 틀린 문제입니다. 다시 맞히면 목록에서 빠집니다.</p>${items.length?`<div class="s-actions"><a class="s-btn teal" href="#/course/${encodeURIComponent(c.id)}/exams" id="mx-wrong-start">오답 ${items.length}문제 다시 풀기</a></div><ul class="mx-wrong-list">${items.map(it=>`<li><span class="mx-badge mx-t-${it.type}">${TYPE_NAME[it.type]}</span><span class="mx-wrong-q">${e(it.q)}</span><a href="${srcHref(it,c.id)}">${e(srcLabel(it))}</a><small>${w[it.id].count}회 틀림</small></li>`).join('')}</ul>`:'<div class="s-notice">모의고사 오답이 없습니다.</div>'}</section>`;
-  if(q('#mx-wrong-start'))q('#mx-wrong-start').onclick=()=>{makeExam(c.id,shuffle(items.map(x=>x.id)),'틀린 문제 복습');};
+  const w=db.wrong[c.id]||{},pq=new Set(pageQuizWrongs(c.id).filter(id=>!db.srs[id]||(!db.srs[id].done&&db.srs[id].step===0))),mk=new Set(wrongIds(c.id)),due=new Set(dueIds(c.id));
+  const all=[...new Set([...pq,...mk])].map(byId).filter(Boolean);
+  const src=it=>pq.has(it.id)&&mk.has(it.id)?'both':pq.has(it.id)?'page':'mock';
+  let fs='all',ft='all';
+  const draw=()=>{const list=all.filter(it=>(fs==='all'||src(it)===fs||src(it)==='both')&&(ft==='all'||it.type===ft)).sort((a,b)=>(due.has(b.id)-due.has(a.id))||((w[b.id]?.count||0)-(w[a.id]?.count||0)));
+    root.innerHTML=`<section class="s-section mx"><h2>통합 오답 노트</h2><p>페이지 퀴즈와 모의고사에서 틀린 문제를 한곳에 모았습니다. 다시 맞히면 빠지고, 틀린 문제는 1·3·7·14일 뒤에 다시 복습하도록 예약됩니다.</p>
+    <div class="mx-chips" role="group" aria-label="출처">${[['all','전체'],['page','페이지 퀴즈'],['mock','모의고사']].map(([k,t])=>`<button type="button" class="mx-chip ${fs===k?'on':''}" data-fs="${k}">${t}</button>`).join('')}</div>
+    <div class="mx-chips" role="group" aria-label="유형">${[['all','모든 유형'],...TYPES].map(([k,t])=>`<button type="button" class="mx-chip ${ft===k?'on':''}" data-ft="${k}">${t}</button>`).join('')}</div>
+    ${list.length?`<div class="s-actions"><button type="button" class="s-btn teal" id="mx-wrong-start">이 목록 ${list.length}문제 다시 풀기</button>${due.size?`<button type="button" class="s-btn" id="mx-wrong-due">오늘의 복습 ${due.size}문제</button>`:''}</div><ul class="mx-wrong-list">${list.map(it=>`<li><span class="mx-badge mx-t-${it.type}">${TYPE_NAME[it.type]}</span><span class="mx-wrong-q">${e(it.q)}${due.has(it.id)?' <em class="mx-due">오늘 복습</em>':''}</span><a href="${srcHref(it,c.id)}">${e(srcLabel(it))}</a><small>${src(it)==='page'?'페이지 퀴즈':src(it)==='mock'?`모의고사 ${w[it.id]?.count||1}회`:`둘 다 · ${w[it.id]?.count||1}회`}</small></li>`).join('')}</ul>`:'<div class="s-notice">조건에 맞는 오답이 없습니다.</div>'}</section>`;
+    qa('[data-fs]',root).forEach(b=>b.onclick=()=>{fs=b.dataset.fs;draw();});qa('[data-ft]',root).forEach(b=>b.onclick=()=>{ft=b.dataset.ft;draw();});
+    if(q('#mx-wrong-start'))q('#mx-wrong-start').onclick=()=>startExam(c.id,list.map(x=>x.id),'오답 노트 복습');
+    if(q('#mx-wrong-due'))q('#mx-wrong-due').onclick=()=>startExam(c.id,[...due],'오늘의 복습');};
+  draw();
+  // 기존 오답 목록(실험 예측 오답 포함)은 접어서 아래에 유지
+  const host=root.parentElement;if(host&&!host.querySelector('.mx-legacy')){const olds=[...host.querySelectorAll('h2')].filter(h=>h.textContent.trim()==='오답 복습'&&!h.closest('.mx')).map(h=>h.closest('section'));if(olds.length){const d=document.createElement('details');d.className='mx-legacy s-section';d.innerHTML='<summary>페이지별 원래 오답 목록 (실험 예측 오답 포함)</summary>';olds.forEach(x=>d.append(x));root.after(d);}}
 }
 
-window.MockExam={mount,bank,isCorrect,_db:()=>db};
+window.MockExam={mount,bank,isCorrect,_db:()=>db,dueIds,startExam,dday,scopeStatus,doneSet,pageQuizWrongs,courseHasBank};
 })();
