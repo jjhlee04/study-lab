@@ -117,14 +117,14 @@ function pool(courseId,mode){
 }
 function settings(courseId){
   const s=db.settings[courseId]||{};
-  return {counts:{...(DEFAULTS[courseId]||{mc:10,tf:5,short:5,code:0}),...(s.counts||{})},mode:s.mode||'all'};
+  return {counts:{...(DEFAULTS[courseId]||{mc:10,tf:5,short:5,code:0}),...(s.counts||{})},mode:s.mode||'all',minutes:Number.isInteger(s.minutes)&&s.minutes>=0&&s.minutes<=180?s.minutes:50};
 }
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 function makeExam(courseId,ids,label){
   const order={};
   for(const id of ids){const it=byId(id);if(it&&it.type==='mc')order[id]=shuffle(it.options.map((_,i)=>i));}
-  db.current[courseId]={ids,order,answers:{},submitted:false,label,created:Date.now(),overrides:{}};
+  db.current[courseId]={ids,order,answers:{},submitted:false,label,created:Date.now(),overrides:{},minutes:settings(courseId).minutes,deadline:settings(courseId).minutes?Date.now()+settings(courseId).minutes*60000:null};
   save();
 }
 function generate(courseId){
@@ -165,6 +165,7 @@ function renderSetup(root){
   <p class="mx-lead">강의자료 범위에서 문제를 뽑아 한 번에 풉니다. 제출하기 전에는 정답이 보이지 않고, 제출하면 자동 채점과 해설, 근거 페이지가 나옵니다.</p>
   <form id="mx-setup" class="mx-setup">
     <fieldset class="mx-modes"><legend>출제 범위</legend>${modes.map(([m,n])=>{const ok=m==='all'||scopeOf(c.id,m)!==undefined;return `<label class="${ok?'':'mx-off'}"><input type="radio" name="mode" value="${m}" ${st.mode===m?'checked':''} ${ok?'':'disabled'}> ${n}${ok?'':' <small>(시험범위 미지정)</small>'}</label>`;}).join('')}</fieldset>
+    <label class="mx-time-setting">제한 시간 (분, 0은 제한 없음)<input type="number" name="minutes" min="0" max="180" step="1" value="${st.minutes}" required></label>
     <fieldset class="mx-counts"><legend>문제 유형별 개수</legend>
       <div class="mx-count-grid">${TYPES.map(([t,n])=>`<label><span>${n}</span><input type="number" name="${t}" min="0" max="${av[t]}" value="${Math.min(+st.counts[t]||0,av[t])}" inputmode="numeric"><small>출제 가능 ${av[t]}개</small></label>`).join('')}</div>
       <div class="mx-ratio" aria-live="polite">${ratioBar(st.counts,av)}</div>
@@ -179,11 +180,11 @@ function renderSetup(root){
   qa('[data-date]',root).forEach(i=>i.onchange=()=>{db.dates[c.id]??={};db.dates[c.id][i.dataset.date]=i.value;save();renderSetup(root);});
   if(q('#mx-due'))q('#mx-due').onclick=()=>startExam(c.id,dueIds(c.id),'오늘의 복습');
   const form=q('#mx-setup');
-  const read=()=>{const f=new FormData(form);return{mode:f.get('mode')||'all',counts:Object.fromEntries(TYPES.map(([t])=>[t,Math.max(0,parseInt(f.get(t))||0)]))};};
+  const read=()=>{const f=new FormData(form);return{minutes:Math.max(0,Math.min(180,Math.floor(Number(f.get('minutes'))||0))),mode:f.get('mode')||'all',counts:Object.fromEntries(TYPES.map(([t])=>[t,Math.max(0,parseInt(f.get(t))||0)]))};};
   const persist=()=>{db.settings[c.id]=read();save();};
   qa('input[name=mode]',form).forEach(r=>r.onchange=()=>{persist();renderSetup(root);});
-  qa('.mx-counts input',form).forEach(i=>i.oninput=()=>{persist();const s=settings(c.id),a=avail(s.mode);q('.mx-ratio',form).innerHTML=ratioBar(s.counts,a);const t=TYPES.reduce((n,[k])=>n+Math.min(s.counts[k],a[k]),0);const b=q('button[type=submit]',form);b.textContent=`모의고사 시작 · ${t}문제`;b.disabled=!t;});
-  if(q('#mx-preset'))q('#mx-preset').onclick=()=>{db.settings[c.id]={mode:read().mode,counts:{...DEFAULTS[c.id]}};save();renderSetup(root);};
+  qa('.mx-counts input,input[name=minutes]',form).forEach(i=>i.oninput=()=>{persist();const s=settings(c.id),a=avail(s.mode);q('.mx-ratio',form).innerHTML=ratioBar(s.counts,a);const t=TYPES.reduce((n,[k])=>n+Math.min(s.counts[k],a[k]),0);const b=q('button[type=submit]',form);b.textContent=`모의고사 시작 · ${t}문제`;b.disabled=!t;});
+  if(q('#mx-preset'))q('#mx-preset').onclick=()=>{db.settings[c.id]={mode:read().mode,minutes:read().minutes,counts:{...DEFAULTS[c.id]}};save();renderSetup(root);};
   form.onsubmit=ev=>{ev.preventDefault();persist();if(generate(c.id)){renderExam(root);root.scrollIntoView({block:'start'});}};
   if(q('#mx-retry-wrong'))q('#mx-retry-wrong').onclick=()=>{makeExam(c.id,shuffle(wrongIds(c.id)),'틀린 문제 복습');renderExam(root);root.scrollIntoView({block:'start'});};
 }
@@ -214,8 +215,8 @@ function renderTaking(root,cur){
   const c=ctx.course,items=cur.ids.map(byId).filter(Boolean);
   const done=()=>items.filter(it=>cur.answers[it.id]!==undefined&&cur.answers[it.id]!=='').length;
   let lastType='';
-  root.innerHTML=`<section class="s-section mx"><div class="mx-head"><h2>모의고사 <small>${e(cur.label)} · ${items.length}문제</small></h2><div class="mx-progress"><span id="mx-done">${done()}</span> / ${items.length} 응답</div></div>
-  <form id="mx-form" class="mx-form" novalidate>${items.map((it,i)=>{const sec=it.type!==lastType?`<h3 class="mx-type-head">${TYPE_NAME[it.type]}</h3>`:'';lastType=it.type;return `${sec}<article class="mx-q" id="mx-q-${i}"><div class="mx-qhead"><span class="mx-qno">${i+1}</span><span class="mx-badge mx-t-${it.type}">${TYPE_NAME[it.type]}</span></div><p class="mx-stem">${e(it.q)}</p>${questionHTML(it,i,cur,false)}</article>`;}).join('')}
+  root.innerHTML=`<section class="s-section mx"><div class="mx-head"><h2>모의고사 <small>${e(cur.label)} · ${items.length}문제</small></h2><div class="mx-progress">${cur.deadline?'<span id="mx-clock" role="timer" aria-label="시험 남은 시간"></span> · ':''}<span id="mx-done">${done()}</span> / ${items.length} 응답</div></div>
+  <form id="mx-form" class="mx-form" novalidate>${items.map((it,i)=>{const sec=it.type!==lastType?`<h3 class="mx-type-head">${TYPE_NAME[it.type]}</h3>`:'';lastType=it.type;return `${sec}<article class="mx-q" data-study-question="${e(it.id)}" id="mx-q-${i}"><div class="mx-qhead"><span class="mx-qno">${i+1}</span><span class="mx-badge mx-t-${it.type}">${TYPE_NAME[it.type]}</span></div><p class="mx-stem">${e(it.q)}</p>${questionHTML(it,i,cur,false)}</article>`;}).join('')}
   <div class="mx-submit-bar"><p id="mx-submit-note" class="mx-note"></p><div class="s-actions"><button class="s-btn teal" type="submit" id="mx-submit">제출하고 채점하기</button><button class="s-btn" type="button" id="mx-quit">그만두기</button></div></div></form></section>`;
   const form=q('#mx-form');
   const update=(el)=>{const i=+el.name.slice(3),it=items[i];cur.answers[it.id]=el.value;save();q('#mx-done').textContent=done();};
@@ -244,10 +245,10 @@ function renderResult(root,cur){
   const score=items.filter(ok).length;
   const byType=TYPES.map(([t,n])=>{const xs=items.filter(it=>it.type===t);return xs.length?{t,n,total:xs.length,ok:xs.filter(ok).length}:null;}).filter(Boolean);
   const pct=items.length?Math.round(score/items.length*100):0;
-  root.innerHTML=`<section class="s-section mx"><div class="mx-head"><h2>채점 결과 <small>${e(cur.label)}</small></h2></div>
+  root.innerHTML=`<section class="s-section mx"><div class="mx-head"><h2>채점 결과 <small>${e(cur.label)}${cur.autoSubmitted?' · 시간 종료로 자동 제출':''}</small></h2></div>
   <div class="mx-score"><div class="mx-score-main"><strong>${score}</strong><span>/ ${items.length}</span><em>${pct}점</em></div><ul class="mx-score-types">${byType.map(b=>`<li><span>${b.n}</span><b>${b.ok} / ${b.total}</b></li>`).join('')}</ul></div>
   <div class="s-actions mx-result-actions"><label class="mx-filter"><input type="checkbox" id="mx-only-wrong"> 틀린 문제만 보기</label><button class="s-btn teal" id="mx-new">새 모의고사</button>${items.length-score?`<button class="s-btn" id="mx-redo-wrong">이번에 틀린 ${items.length-score}문제 다시 풀기</button>`:''}</div>
-  <div class="mx-form">${items.map((it,i)=>{const good=ok(it),ans=cur.answers[it.id];return `<article class="mx-q ${good?'mx-good':'mx-bad'}" data-good="${good}"><div class="mx-qhead"><span class="mx-qno">${i+1}</span><span class="mx-badge mx-t-${it.type}">${TYPE_NAME[it.type]}</span><span class="mx-mark">${good?(cur.overrides[it.id]?'정답 (직접 인정)':'정답'):'오답'}</span></div><p class="mx-stem">${e(it.q)}</p>${questionHTML(it,i,cur,true)}
+  <div class="mx-form">${items.map((it,i)=>{const good=ok(it),ans=cur.answers[it.id];return `<article data-study-question="${e(it.id)}" class="mx-q ${good?'mx-good':'mx-bad'}" data-good="${good}"><div class="mx-qhead"><span class="mx-qno">${i+1}</span><span class="mx-badge mx-t-${it.type}">${TYPE_NAME[it.type]}</span><span class="mx-mark">${good?(cur.overrides[it.id]?'정답 (직접 인정)':'정답'):'오답'}</span></div><p class="mx-stem">${e(it.q)}</p>${questionHTML(it,i,cur,true)}
     ${(it.type==='short'||it.type==='code')?`<dl class="mx-compare"><div><dt>내 답</dt><dd><pre>${e(userText(it,ans))}</pre></dd></div><div><dt>정답</dt><dd><pre>${e(answerText(it))}</pre>${it.answer.length>1?`<small>인정 답안: ${it.answer.slice(1).map(e).join(' · ')}</small>`:''}</dd></div></dl>`:''}
     <div class="mx-why"><b>해설</b><p>${e(it.why)}</p>${it.type==='mc'&&it.reasons?`<details><summary>선택지별 이유</summary><ul>${it.options.map((o,k)=>`<li><b>${e(o)}</b> — ${e(it.reasons[k]||'')}</li>`).join('')}</ul></details>`:''}</div>
     <div class="mx-qfoot"><a class="mx-src" href="${srcHref(it,c.id)}">근거: ${e(srcLabel(it))} 학습하기 →</a>${!good&&(it.type==='short'||it.type==='code')&&ans?`<button class="s-btn ghost" data-accept="${e(it.id)}">같은 뜻이므로 정답으로 인정</button>`:''}</div></article>`;}).join('')}</div></section>`;
@@ -267,7 +268,7 @@ function renderWrong(root){
     root.innerHTML=`<section class="s-section mx"><h2>통합 오답 노트</h2><p>페이지 퀴즈와 모의고사에서 틀린 문제를 한곳에 모았습니다. 다시 맞히면 빠지고, 틀린 문제는 1·3·7·14일 뒤에 다시 복습하도록 예약됩니다.</p>
     <div class="mx-chips" role="group" aria-label="출처">${[['all','전체'],['page','페이지 퀴즈'],['mock','모의고사']].map(([k,t])=>`<button type="button" class="mx-chip ${fs===k?'on':''}" data-fs="${k}">${t}</button>`).join('')}</div>
     <div class="mx-chips" role="group" aria-label="유형">${[['all','모든 유형'],...TYPES].map(([k,t])=>`<button type="button" class="mx-chip ${ft===k?'on':''}" data-ft="${k}">${t}</button>`).join('')}</div>
-    ${list.length?`<div class="s-actions"><button type="button" class="s-btn teal" id="mx-wrong-start">이 목록 ${list.length}문제 다시 풀기</button>${due.size?`<button type="button" class="s-btn" id="mx-wrong-due">오늘의 복습 ${due.size}문제</button>`:''}</div><ul class="mx-wrong-list">${list.map(it=>`<li><span class="mx-badge mx-t-${it.type}">${TYPE_NAME[it.type]}</span><span class="mx-wrong-q">${e(it.q)}${due.has(it.id)?' <em class="mx-due">오늘 복습</em>':''}</span><a href="${srcHref(it,c.id)}">${e(srcLabel(it))}</a><small>${src(it)==='page'?'페이지 퀴즈':src(it)==='mock'?`모의고사 ${w[it.id]?.count||1}회`:`둘 다 · ${w[it.id]?.count||1}회`}</small></li>`).join('')}</ul>`:'<div class="s-notice">조건에 맞는 오답이 없습니다.</div>'}</section>`;
+    ${list.length?`<div class="s-actions"><button type="button" class="s-btn teal" id="mx-wrong-start">이 목록 ${list.length}문제 다시 풀기</button>${due.size?`<button type="button" class="s-btn" id="mx-wrong-due">오늘의 복습 ${due.size}문제</button>`:''}</div><ul class="mx-wrong-list">${list.map(it=>`<li data-study-question="${e(it.id)}"><span class="mx-badge mx-t-${it.type}">${TYPE_NAME[it.type]}</span><span class="mx-wrong-q">${e(it.q)}${due.has(it.id)?' <em class="mx-due">오늘 복습</em>':''}</span><a href="${srcHref(it,c.id)}">${e(srcLabel(it))}</a><small>${src(it)==='page'?'페이지 퀴즈':src(it)==='mock'?`모의고사 ${w[it.id]?.count||1}회`:`둘 다 · ${w[it.id]?.count||1}회`}</small></li>`).join('')}</ul>`:'<div class="s-notice">조건에 맞는 오답이 없습니다.</div>'}</section>`;
     qa('[data-fs]',root).forEach(b=>b.onclick=()=>{fs=b.dataset.fs;draw();});qa('[data-ft]',root).forEach(b=>b.onclick=()=>{ft=b.dataset.ft;draw();});
     if(q('#mx-wrong-start'))q('#mx-wrong-start').onclick=()=>startExam(c.id,list.map(x=>x.id),'오답 노트 복습');
     if(q('#mx-wrong-due'))q('#mx-wrong-due').onclick=()=>startExam(c.id,[...due],'오늘의 복습');};
@@ -276,5 +277,21 @@ function renderWrong(root){
   const host=root.parentElement;if(host&&!host.querySelector('.mx-legacy')){const olds=[...host.querySelectorAll('h2')].filter(h=>h.textContent.trim()==='오답 복습'&&!h.closest('.mx')).map(h=>h.closest('section'));if(olds.length){const d=document.createElement('details');d.className='mx-legacy s-section';d.innerHTML='<summary>페이지별 원래 오답 목록 (실험 예측 오답 포함)</summary>';olds.forEach(x=>d.append(x));root.after(d);}}
 }
 
-window.MockExam={mount,bank,isCorrect,_db:()=>db,dueIds,startExam,dday,scopeStatus,doneSet,pageQuizWrongs,courseHasBank};
+function checkDeadlines(){
+  const now=Date.now();
+  for(const [id,cur] of Object.entries(db.current)){
+    if(!cur.submitted&&cur.deadline&&now>=cur.deadline){
+      cur.autoSubmitted=true;submit(id,cur,cur.ids.map(byId).filter(Boolean));
+      if(ctx?.course.id===id&&q('#mx-root'))renderExam(q('#mx-root'));
+      window.StudyTools?.notice('시험 시간이 끝나 자동 제출했습니다.');
+    }
+  }
+  const cur=ctx&&db.current[ctx.course.id],clock=q('#mx-clock');
+  if(cur&&!cur.submitted&&cur.deadline&&clock){const n=Math.max(0,Math.ceil((cur.deadline-now)/1000));clock.textContent=String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');}
+}
+function reviewCard(id,known){if(!byId(id))return false;if(known)srsUpdate(id,true,false);else db.srs[id]={step:0,due:Date.now()};save();return !saveFailed;}
+setInterval(checkDeadlines,1000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDeadlines();});
+checkDeadlines();
+window.MockExam={reviewCard,mount,bank,isCorrect,_db:()=>db,dueIds,startExam,dday,scopeStatus,doneSet,pageQuizWrongs,courseHasBank};
 })();

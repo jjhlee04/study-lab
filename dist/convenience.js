@@ -98,7 +98,7 @@ function dashboard(){const main=q('#school-app .s-main');if(!main||!/^#\/?librar
   const top=main.querySelector('.s-topbar');(top?top.after(sec):main.prepend(sec));}
 
 /* ── D2. 전체 백업/복원 + 설정 ── */
-const BACKUP_KEYS=k=>k==='unix-lab-progress-v1'||k==='course-study-v1'||k.startsWith('study-');
+const BACKUP_KEYS=k=>k!=='study-sync-local-v1'&&(k==='unix-lab-progress-v1'||k==='course-study-v1'||k.startsWith('study-'));
 function exportAll(){const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(BACKUP_KEYS(k))data[k]=localStorage.getItem(k);}
   const blob=new Blob([JSON.stringify({app:'study-lab',version:1,created:new Date().toISOString(),keys:data},null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`study-lab-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);return Object.keys(data).length;}
 function deepMerge(a,b){if(Array.isArray(a)&&Array.isArray(b))return [...new Set([...a,...b].map(x=>JSON.stringify(x)))].map(x=>JSON.parse(x));if(a&&b&&typeof a==='object'&&typeof b==='object'){const o={...a};for(const [k,v] of Object.entries(b))o[k]=k in a?deepMerge(a[k],v):v;return o;}return a===undefined?b:a;}

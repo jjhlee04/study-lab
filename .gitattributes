@@ -1,0 +1,2 @@
+# Preserve upstream bundled strings (including intentional template whitespace).
+dist/vendor/*.js -whitespace
