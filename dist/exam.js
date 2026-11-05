@@ -7,7 +7,7 @@
 const KEY='study-mock-exam-v1';
 const TYPES=[['mc','선다형'],['tf','참·거짓'],['short','단답형'],['code','실행 결과 예측']];
 const TYPE_NAME=Object.fromEntries(TYPES);
-const DEFAULTS={unix:{mc:20,tf:0,short:20,code:0},'programming-languages':{mc:10,tf:5,short:5,code:5},'discrete-math':{mc:10,tf:5,short:10,code:5}};
+const DEFAULTS={unix:{mc:20,tf:0,short:20,code:0},'programming-languages':{mc:10,tf:5,short:5,code:5},'discrete-math':{mc:10,tf:5,short:10,code:5},'data-communication':{mc:15,tf:5,short:10,code:5}};
 /* 표지·운영 안내·저작권 안내처럼 시험 내용이 아닌 유닉스 페이지는 문항에서 제외 */
 const UNIX_SKIP=new Set(['w01-1','w01-2','w01-4','w01-5','w01-13','w01-20','w02-1','w02-10','w02-22','w02-54','w06-1','w06-19','w06-20']);
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -30,7 +30,7 @@ function bank(){
   for(const ch of window.COURSE_CHAPTERS||[]){
     for(const p of ch.pages){
       if(!p.quiz||p.kind==='structure')continue;
-      list.push({id:(ch.course&&ch.course!=='programming-languages'?'dm':'pl')+'-mc-'+ch.id+'-'+p.page,course:ch.course||'programming-languages',src:[ch.id,p.page],type:'mc',q:p.quiz[0],options:p.quiz[1],answer:0,why:p.quiz[2],reasons:p.quizReasons,title:p.title});
+      list.push({id:({'discrete-math':'dm','data-communication':'dc'}[ch.course]||'pl')+'-mc-'+ch.id+'-'+p.page,course:ch.course||'programming-languages',src:[ch.id,p.page],type:'mc',q:p.quiz[0],options:p.quiz[1],answer:0,why:p.quiz[2],reasons:p.quizReasons,title:p.title});
     }
   }
   for(const x of window.EXAM_BANK||[])list.push(x);

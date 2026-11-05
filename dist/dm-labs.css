@@ -48,3 +48,13 @@
 .dm-tree .dm-leaf{fill:#40bdc5;cursor:pointer}
 .dm-tree .dm-leaf:hover,.dm-tree .dm-leaf:focus{fill:#ffcf3f;outline:none}
 @media (max-width:760px){.dm-lab{padding:14px 12px}.dm-inputs label{flex:1 1 130px}.dm-table{font-size:15px}}
+.dc-par{background:#eef4f8;color:#33465f;font-weight:700}
+.dc-bad{background:#fde3e1!important;color:#b4372c}
+.dc-dim{color:#9aa7b8}
+.dc-frame{display:flex;flex-wrap:wrap;gap:0;border:2px solid #101c39;border-radius:6px;overflow:hidden;margin:8px 0;font:15px ui-monospace,Menlo,Consolas,monospace}
+.dc-frame span{padding:6px 10px;border-right:1px solid #c9d6e2;overflow-wrap:anywhere}
+.dc-frame .dc-mac{background:#fff3c4}.dc-frame .dc-ip{background:#dcefff}
+.dc-frame.dm-now{border-color:#087f84;box-shadow:0 0 0 3px #bfe8ea}
+.dc-tables{display:flex;flex-wrap:wrap;gap:12px}
+.dc-tables>div{min-width:130px}
+.dm-cells .dc-ee{background:#e6f0ff}.dm-cells .dc-cs{background:#fff0dc}
