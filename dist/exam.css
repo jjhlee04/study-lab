@@ -2,7 +2,7 @@
 .mx{--mx-teal:#087f84;--mx-navy:#101c39;--mx-line:#d6e0e9;--mx-good:#0f7a4f;--mx-bad:#b4372c}
 .mx h2 small{font-size:16px;font-weight:600;color:#56657b;margin-left:8px}
 .mx-lead{color:#3f4e64;margin:0 0 18px}
-.mx fieldset{border:1px solid var(--mx-line);border-radius:8px;padding:14px 18px 16px;margin:0 0 16px}
+.mx fieldset{border:1px solid var(--mx-line);border-radius:8px;padding:14px 18px 16px;margin:0 0 16px;min-inline-size:0;box-sizing:border-box}
 .mx legend{font-weight:700;padding:0 6px;font-size:17px}
 .mx-modes{display:flex;flex-wrap:wrap;gap:8px 22px}
 .mx-modes label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
@@ -10,8 +10,8 @@
 .mx-modes small{font-size:14px}
 .mx input[type=radio],.mx input[type=checkbox]{width:20px;height:20px;accent-color:var(--mx-teal);flex-shrink:0}
 .mx-count-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.mx-count-grid label{display:flex;flex-direction:column;gap:4px;font-weight:600}
-.mx-count-grid input{width:100%;padding:9px 12px;border:1px solid #c5d2df;border-radius:6px;font-size:18px!important}
+.mx-count-grid label{display:flex;flex-direction:column;gap:4px;font-weight:600;min-width:0}
+.mx-count-grid input{width:100%;padding:9px 12px;border:1px solid #c5d2df;border-radius:6px;font-size:18px!important;box-sizing:border-box;min-width:0}
 .mx-count-grid small{font-weight:400;color:#5b6a80;font-size:14px}
 .mx-ratio{margin:14px 0 4px}
 .mx-bar{display:flex;border-radius:6px;overflow:hidden;font-size:14px;font-weight:600;min-height:32px}
@@ -102,3 +102,5 @@
 .mx-due{font-style:normal;font-size:13px;font-weight:700;color:#8a5a12;background:#fff3c4;border-radius:999px;padding:1px 8px;margin-left:4px}
 .mx-legacy{margin-top:8px}.mx-legacy summary{cursor:pointer;font-weight:600;color:#33465f;min-height:40px}
 @media (max-width:760px){.mx-plan-grid{grid-template-columns:1fr}}
+/* Long preset labels must wrap inside a narrow exam form. */
+.mx-counts .s-btn{white-space:normal;max-width:100%;overflow-wrap:anywhere}
