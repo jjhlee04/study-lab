@@ -192,3 +192,9 @@ Apple Pencil 몸통 두 번 탭 자동 전환은 구현하지 않았습니다. �
 - 실험실(`dist/dc-labs.js`): 노드 지연 계산기(19·25·44·45쪽), 자동차 대열 비유(46·47쪽), 트래픽 강도·버퍼 넘침(26·43·48·51쪽), 패킷 vs 회선 교환 이항분포(30·31쪽), 처리율·병목(52–54쪽), 캡슐화 단계(60–62쪽).
 - 모의고사 추가 문항(`dist/exam-bank-dc.js`): 단답 19, OX 12, 계산·추적 5 (모두 출처 쪽 표시, 계산 직접 검증).
 - 원고: `authoring/data-communication/w10.py`, `build.py`.
+# Focused reading (November 2026)
+
+- Prepared PL, discrete math and data communication chapters support continuous vertical reading with pinned learning tabs and a single-page alternative. Uploaded custom materials and the original Unix lab retain their existing reader.
+- Wider reading canvas, compact course header and inline quiz/completion updates avoid unnecessary scroll resets.
+- The toolbar folds into a 40px pencil icon. Text selection/copy is disabled by default, with a settings toggle; editing text fields remains available.
+- Local Chrome QA covered desktop/mobile layouts, reader mode switching, grading position, handwriting persistence, settings and flashcard regression. No production browser or physical iPad check was performed.
