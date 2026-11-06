@@ -11,4 +11,20 @@ const reveal=document.querySelector('#notebook-reveal');reveal.innerHTML='<svg v
 reveal.addEventListener('click',()=>localStorage.setItem('study-tools-collapsed-v1','false'));if(localStorage.getItem('study-tools-collapsed-v1')==='true')window.NotebookOptions.hide();
 // A collapsed toolbar remains reachable, including after automatic toolbar hiding.
 const watch=new MutationObserver(()=>{reveal.hidden=!bar.hidden;});watch.observe(bar,{attributes:true,attributeFilter:['hidden']});reveal.hidden=!bar.hidden;
+// A tap opens tools; dragging the compact button only changes its position.
+const ICON_POSITION='study-pen-button-position-v1';let iconPosition=null,gesture=null,suppressClickUntil=0;
+try{const p=JSON.parse(localStorage.getItem(ICON_POSITION));if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y))iconPosition={x:Math.max(0,Math.min(1,p.x)),y:Math.max(0,Math.min(1,p.y))};}catch{}
+function iconBounds(){const v=window.visualViewport,margin=12,size=40,topInset=parseFloat(getComputedStyle(reveal).scrollMarginTop)||0;const left=(v?.offsetLeft||0)+margin,top=(v?.offsetTop||0)+margin+topInset;return{left,top,width:Math.max(0,(v?.width||innerWidth)-size-margin*2),height:Math.max(0,(v?.height||innerHeight)-size-margin*2-topInset)};}
+function placeIcon(x,y){const b=iconBounds();reveal.style.left=Math.max(b.left,Math.min(b.left+b.width,x))+'px';reveal.style.top=Math.max(b.top,Math.min(b.top+b.height,y))+'px';reveal.style.right='auto';reveal.style.bottom='auto';}
+function restoreIcon(){if(gesture||!iconPosition)return;const b=iconBounds();placeIcon(b.left+iconPosition.x*b.width,b.top+iconPosition.y*b.height);}
+function saveIcon(){const b=iconBounds(),r=reveal.getBoundingClientRect();iconPosition={x:b.width?(r.left-b.left)/b.width:0,y:b.height?(r.top-b.top)/b.height:0};try{localStorage.setItem(ICON_POSITION,JSON.stringify(iconPosition));}catch{}}
+reveal.title='필기 도구 · 끌어서 이동';reveal.setAttribute('aria-label','필기 도구 펼치기 · 끌어서 위치 이동');
+reveal.addEventListener('pointerdown',e=>{if(e.button!==0||gesture)return;const r=reveal.getBoundingClientRect();gesture={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top,moved:false};reveal.setPointerCapture(e.pointerId);},true);
+reveal.addEventListener('pointermove',e=>{if(gesture?.id!==e.pointerId)return;const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;if(!gesture.moved&&Math.hypot(dx,dy)<7)return;gesture.moved=true;e.preventDefault();placeIcon(gesture.left+dx,gesture.top+dy);reveal.classList.add('pen-icon-dragging');},true);
+function endIconGesture(e,cancelled=false){if(gesture?.id!==e.pointerId)return;const g=gesture;gesture=null;reveal.classList.remove('pen-icon-dragging');if(g.moved){e.preventDefault();e.stopImmediatePropagation();suppressClickUntil=performance.now()+600;if(cancelled){if(iconPosition)restoreIcon();else placeIcon(g.left,g.top);}else saveIcon();}if(reveal.hasPointerCapture(e.pointerId))reveal.releasePointerCapture(e.pointerId);}
+reveal.addEventListener('pointerup',e=>endIconGesture(e),true);reveal.addEventListener('pointercancel',e=>endIconGesture(e,true),true);
+reveal.addEventListener('lostpointercapture',e=>{if(gesture?.id===e.pointerId)endIconGesture(e,true);},true);
+reveal.addEventListener('click',e=>{if(performance.now()<suppressClickUntil){e.preventDefault();e.stopImmediatePropagation();}},true);
+reveal.addEventListener('keydown',e=>{const d={ArrowLeft:[-24,0],ArrowRight:[24,0],ArrowUp:[0,-24],ArrowDown:[0,24]}[e.key];if(!d)return;e.preventDefault();const r=reveal.getBoundingClientRect();placeIcon(r.left+d[0],r.top+d[1]);saveIcon();});
+reveal.addEventListener('contextmenu',e=>e.preventDefault());reveal.addEventListener('dragstart',e=>e.preventDefault());window.addEventListener('resize',restoreIcon);window.visualViewport?.addEventListener('resize',restoreIcon);window.visualViewport?.addEventListener('scroll',restoreIcon);restoreIcon();
 })();
