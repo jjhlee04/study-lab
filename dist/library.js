@@ -57,5 +57,5 @@ let lastRouteHash=null;function route(){const preserve=lastRouteHash===location.
 const back=document.createElement('a');back.id='library-back';back.href=url('unix');back.innerHTML=icon('back')+'과목 홈 · 학습 서재';q('#sidebar').insertBefore(back,q('#sidebar').firstChild);
 q('.skip').onclick=ev=>{ev.preventDefault();const target=q(document.body.classList.contains('lib-view')?'#s-content':'#content');target.focus();target.scrollIntoView({block:'start'});};
 window.addEventListener('hashchange',route);window.addEventListener('pageshow',()=>{if(document.body.classList.contains('lib-view'))route();});route();
-window.StudyLibrary={rangePages,scope(id,type){const c=course(id);if(!c)return null;const info=examInfo(c,type),out={};for(const m of info.selected){let p=null;try{p=rangePages(info.scope[m.id],m.pages);}catch{}out[m.id]=p;}return out;}};
+window.StudyLibrary={rangePages,navigation(id){const c=course(id);return c?{course:{id:c.id,name:c.name,grade:c.grade,semester:c.semester},links:tabs.map(([key,label])=>({key,label,href:url(id,key)})),courses:state.courses.map(x=>({id:x.id,name:x.name,href:url(x.id)}))}:null;},scope(id,type){const c=course(id);if(!c)return null;const info=examInfo(c,type),out={};for(const m of info.selected){let p=null;try{p=rangePages(info.scope[m.id],m.pages);}catch{}out[m.id]=p;}return out;}};
 })();

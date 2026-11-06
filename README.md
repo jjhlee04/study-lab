@@ -200,3 +200,5 @@ Apple Pencil 몸통 두 번 탭 자동 전환은 구현하지 않았습니다. �
 - Local Chrome QA covered desktop/mobile layouts, reader mode switching, grading position, handwriting persistence, settings and flashcard regression. No production browser or physical iPad check was performed.
 
 Learning tabs fade out after 2 seconds without scrolling. Pointer interaction or keyboard focus keeps them available; revealing and hiding the tabs does not change the reading position.
+
+The transient reading tab bar includes a course-menu button. It opens the current course navigation and other courses without returning to the page header. Closing the menu preserves the reading position; the tab bar remains visible while the dialog is open. Local QA covered desktop/tablet/mobile layouts, single-page and continuous readers, Unix routes, touch, keyboard focus and dark mode.

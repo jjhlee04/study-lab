@@ -1,0 +1,23 @@
+(function(){
+'use strict';
+const NAVS='.continuous-reader>.cr-tabs,.cs-reader:not(.continuous-reader) .cs-view-tabs,.workspace .tabs';
+const dialog=document.createElement('dialog');dialog.id='reader-course-menu';dialog.setAttribute('aria-labelledby','rjm-title');document.body.append(dialog);
+let opener=null,sourceNav=null,readingPosition=null,navigating=false;
+function node(tag,className,text){const el=document.createElement(tag);if(className)el.className=className;if(text)el.textContent=text;return el;}
+function link(item,current){const a=node('a','',item.label||item.name);a.href=item.href;if(current)a.setAttribute('aria-current','page');return a;}
+function context(){const parts=location.hash.replace(/^#\/?/,'').split('/'),unix=/^#w\d+\//.test(location.hash),id=unix?'unix':parts[0]==='course'?decodeURIComponent(parts[1]):null;return{id,tab:unix?'textbook':parts[2],data:id?window.StudyLibrary?.navigation(id):null};}
+function position(){if(!dialog.open)return;const r=sourceNav?.getBoundingClientRect(),v=window.visualViewport,width=v?.width||innerWidth,height=v?.height||innerHeight,offsetX=v?.offsetLeft||0,offsetY=v?.offsetTop||0;
+ if(width<=600){dialog.style.left=offsetX+12+'px';dialog.style.top='auto';dialog.style.bottom='max(12px, env(safe-area-inset-bottom, 0px))';dialog.style.width=Math.max(0,width-24)+'px';dialog.style.maxHeight=Math.max(100,height-48)+'px';}
+ else{const w=Math.min(360,width-24);dialog.style.bottom='auto';dialog.style.width=w+'px';dialog.style.maxHeight=Math.max(100,height-24)+'px';const naturalHeight=Math.min(dialog.scrollHeight+2,height-24),below=r?.bottom+8||offsetY+60,top=below+naturalHeight<=offsetY+height-12?below:Math.max(offsetY+12,(r?.top||offsetY+12)-naturalHeight-8);dialog.style.left=Math.max(offsetX+12,Math.min((r?.right||width)-w,offsetX+width-w-12))+'px';dialog.style.top=top+'px';}}
+function build(){const {id,tab,data}=context();dialog.replaceChildren();const heading=node('div','rjm-heading');heading.append(node('h2','',data?.course.name||'학습 서재'));heading.querySelector('h2').id='rjm-title';const close=node('button','rjm-close','닫기');close.type='button';close.onclick=()=>dialog.close();heading.append(close);dialog.append(heading);
+ if(data){const nav=node('nav','rjm-links');nav.setAttribute('aria-label','현재 과목 메뉴');for(const item of data.links)nav.append(link(item,item.key===tab));dialog.append(nav);
+ const others=data.courses.filter(c=>c.id!==id);if(others.length){const section=node('section','rjm-other');section.append(node('h3','','다른 과목'));const list=node('nav','rjm-courses');list.setAttribute('aria-label','다른 과목으로 이동');others.forEach(c=>list.append(link(c)));section.append(list);dialog.append(section);}}
+ const footer=node('div','rjm-footer');footer.append(link({label:'전체 과목 보기',href:'#/library/all/all'}));dialog.append(footer);
+}
+function open(button,nav){if(dialog.open)return;opener=button;sourceNav=nav;readingPosition={x:scrollX,y:scrollY};navigating=false;build();opener.setAttribute('aria-expanded','true');dialog.showModal();position();dialog.querySelector('button').focus({preventScroll:true});window.dispatchEvent(new CustomEvent('reader-menu-toggle',{detail:{open:true,nav}}));}
+function ensure(nav){if(nav.querySelector('.rjm-open'))return;const button=node('button','rjm-open');button.type='button';button.setAttribute('aria-label','과목 메뉴 열기');button.title='과목 메뉴';button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',dialog.id);button.setAttribute('aria-expanded','false');button.innerHTML='<svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';button.onclick=()=>open(button,nav);nav.append(button);}
+dialog.addEventListener('click',e=>{if(e.target.closest('a[href]')){navigating=true;dialog.close();return;}if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
+dialog.addEventListener('close',()=>{opener?.setAttribute('aria-expanded','false');if(!navigating&&readingPosition){opener?.isConnected&&opener.focus({preventScroll:true});if(scrollX!==readingPosition.x||scrollY!==readingPosition.y)window.scrollTo({left:readingPosition.x,top:readingPosition.y,behavior:'instant'});}window.dispatchEvent(new CustomEvent('reader-menu-toggle',{detail:{open:false,nav:sourceNav}}));});
+window.addEventListener('hashchange',()=>{if(dialog.open){navigating=true;dialog.close();}});window.addEventListener('resize',position);window.visualViewport?.addEventListener('resize',position);
+window.ReaderQuickMenu={ensure,isOpen:()=>dialog.open};document.querySelectorAll(NAVS).forEach(ensure);
+})();

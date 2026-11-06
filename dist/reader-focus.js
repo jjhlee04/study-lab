@@ -30,10 +30,10 @@ reveal.addEventListener('contextmenu',e=>e.preventDefault());reveal.addEventList
 // Learning controls appear while scrolling without changing document layout.
 const AUTO_TABS='.continuous-reader>.cr-tabs,.cs-reader:not(.continuous-reader) .cs-view-tabs,.workspace .tabs';
 let visibleTabs=null,tabsTimer=null,heldTabPointer=null,keyboardTabs=false;
-function prepareAutoTabs(){document.querySelectorAll(AUTO_TABS).forEach(nav=>nav.classList.add('reader-auto-tabs'));}
+function prepareAutoTabs(){document.querySelectorAll(AUTO_TABS).forEach(nav=>{nav.classList.add('reader-auto-tabs');window.ReaderQuickMenu?.ensure(nav);});}
 function activeTabs(){return [...document.querySelectorAll(AUTO_TABS)].find(nav=>nav.getClientRects().length);}
 function tabsFor(target){return target instanceof Element?target.closest('.reader-auto-tabs'):null;}
-function scheduleTabsHide(){clearTimeout(tabsTimer);tabsTimer=setTimeout(()=>{if(!visibleTabs)return;if(heldTabPointer!==null||keyboardTabs&&visibleTabs.contains(document.activeElement))return;visibleTabs.classList.remove('reader-tabs-visible');visibleTabs=null;},2000);}
+function scheduleTabsHide(){clearTimeout(tabsTimer);tabsTimer=setTimeout(()=>{if(!visibleTabs)return;if(window.ReaderQuickMenu?.isOpen()||heldTabPointer!==null||keyboardTabs&&visibleTabs.contains(document.activeElement))return;visibleTabs.classList.remove('reader-tabs-visible');visibleTabs=null;},2000);}
 function showTabs(nav=activeTabs()){if(!nav)return;if(visibleTabs&&visibleTabs!==nav)visibleTabs.classList.remove('reader-tabs-visible');visibleTabs=nav;nav.classList.add('reader-tabs-visible');scheduleTabsHide();}
 window.addEventListener('scroll',()=>showTabs(),{passive:true});
 document.addEventListener('pointerdown',e=>{keyboardTabs=false;const nav=tabsFor(e.target);if(nav){heldTabPointer=e.pointerId;showTabs(nav);}else if(visibleTabs)scheduleTabsHide();},true);
@@ -44,5 +44,6 @@ document.addEventListener('focusin',e=>{const nav=tabsFor(e.target);if(nav&&keyb
 document.addEventListener('focusout',()=>{if(visibleTabs)scheduleTabsHide();});
 document.addEventListener('click',e=>{const nav=tabsFor(e.target);if(nav)showTabs(nav);},true);
 for(const id of ['school-app','panel']){const el=document.getElementById(id);if(el)new MutationObserver(prepareAutoTabs).observe(el,{childList:true});}
+window.addEventListener('reader-menu-toggle',e=>{if(e.detail.open)showTabs(e.detail.nav);else scheduleTabsHide();});
 window.addEventListener('pagehide',()=>{clearTimeout(tabsTimer);heldTabPointer=null;});prepareAutoTabs();
 })();
