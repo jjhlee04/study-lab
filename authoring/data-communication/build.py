@@ -8,7 +8,7 @@ def texts(w):
         head,_,body=blk.partition('\n');out.append(body.replace(' // ','\n').replace(' / ','\n').strip())
     return out
 chapters=[]
-for cid,w,title,fname in [('dc09','09','9주차 · 6장 링크 계층: 링크, 접속망, LAN','DC-09-link-layer.pdf')]:
+for cid,w,title,fname in [('dc09','09','9주차 · 6장 링크 계층: 링크, 접속망, LAN','DC-09-link-layer.pdf'),('dc10','10','10주차 · 1장 컴퓨터 네트워크와 인터넷','DC-10-introduction.pdf')]:
     pages=load(f'w{w}');T=texts(w);n_tot=len(T)
     shutil.copy(f'dc{w}.pdf',f'{D}/original/{fname}')
     arr=[]

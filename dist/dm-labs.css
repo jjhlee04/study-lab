@@ -58,3 +58,17 @@
 .dc-tables{display:flex;flex-wrap:wrap;gap:12px}
 .dc-tables>div{min-width:130px}
 .dm-cells .dc-ee{background:#e6f0ff}.dm-cells .dc-cs{background:#fff0dc}
+/* 데이터통신 10주차 실험 */
+.dc-delaybar{display:flex;border-radius:6px;overflow:hidden;margin:10px 0;font-size:14px;font-weight:600;min-height:30px}
+.dc-delaybar span{display:flex;align-items:center;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.dc-db-t{background:#dcefff;color:#16406b}.dc-db-p{background:#ddf3ec;color:#0d5a43}
+.dc-caravan{display:grid;grid-template-columns:repeat(3,auto 1fr);gap:6px 10px;align-items:center;background:#f6f9fc;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:15px}
+.dc-caravan b{font-size:18px}
+.dc-gauge{height:16px;background:#e6edf3;border-radius:999px;overflow:hidden;margin:10px 0 2px;max-width:420px}
+.dc-gauge span{display:block;height:100%;background:#087f84}.dc-gauge .dc-g-warn{background:#c98a12}.dc-gauge .dc-g-bad{background:#b4372c}
+.dc-pdu{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:nowrap}
+.dc-h{display:inline-block;padding:1px 6px;border-radius:4px;margin-right:2px;font-weight:700;font-size:14px}
+.dc-h.t{background:#efe6ff;color:#4b2d7a}.dc-h.n{background:#dcefff;color:#16406b}.dc-h.l{background:#fff0d9;color:#7a4a08}
+.dc-m{display:inline-block;padding:1px 6px;border-radius:4px;background:#ddf3ec;color:#0d5a43}
+.dm-table tr.dc-dim td{color:#a3adbb;background:#f5f7f9}
+@media (max-width:760px){.dc-caravan{grid-template-columns:auto 1fr}}

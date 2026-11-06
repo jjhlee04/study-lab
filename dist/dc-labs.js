@@ -5,13 +5,18 @@
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let timer=null;const stop=()=>{if(timer){clearInterval(timer);timer=null;}};
 const num=(v,lo,hi,d)=>{v=Number(v);return Number.isFinite(v)?Math.min(hi,Math.max(lo,v)):d;};
-const T={parity:'Parity 검사: 비트를 뒤집어 보기',checksum:'인터넷 checksum 계산',crc:'CRC 나눗셈 단계별 계산',aloha:'ALOHA 효율 실험',backoff:'이진 지수 백오프',addr:'다른 LAN으로 보내기: 홉별 주소 추적',sw:'자가 학습 스위치',vlan:'포트 기반 VLAN 전달',mpls:'MPLS 레이블 교환 따라가기',day:'웹 요청의 하루: 단계별 프로토콜'};
+const T={parity:'Parity 검사: 비트를 뒤집어 보기',checksum:'인터넷 checksum 계산',crc:'CRC 나눗셈 단계별 계산',aloha:'ALOHA 효율 실험',backoff:'이진 지수 백오프',addr:'다른 LAN으로 보내기: 홉별 주소 추적',sw:'자가 학습 스위치',vlan:'포트 기반 VLAN 전달',mpls:'MPLS 레이블 교환 따라가기',day:'웹 요청의 하루: 단계별 프로토콜',delay:'노드 지연 계산기: 처리·큐잉·전송·전파',caravan:'자동차 대열 비유 시뮬레이션',queue:'트래픽 강도 La/R와 버퍼 넘침',pvc:'패킷 교환 vs 회선 교환: 수용 인원 계산',thru:'처리율과 병목 링크',encap:'캡슐화: 계층을 내려가고 올라가기'};
 function mode(ch,n){
   if(ch==='dc09'){
     if(n===11||n===12)return 'parity';if(n===13)return 'checksum';if(n===14||n===15)return 'crc';
     if(n>=24&&n<=28)return 'aloha';if(n>=31&&n<=34)return 'backoff';
     if(n>=45&&n<=51)return 'addr';if(n>=60&&n<=67)return 'sw';if(n>=70&&n<=74)return 'vlan';
     if(n>=77&&n<=81)return 'mpls';if(n>=87&&n<=94)return 'day';
+  }
+  if(ch==='dc10'){
+    if(n===19||n===25||n===44||n===45)return 'delay';if(n===46||n===47)return 'caravan';
+    if(n===26||n===43||n===48||n===51)return 'queue';if(n===30||n===31)return 'pvc';
+    if(n>=52&&n<=54)return 'thru';if(n>=60&&n<=62)return 'encap';
   }
   return null;
 }
@@ -154,7 +159,78 @@ day(root){
     ['DNS 질의/응답','DNS ⊂ UDP ⊂ IP ⊂ Ethernet','스위치 → 라우터 → Comcast 네트워크 → DNS 서버 (포워딩 테이블: RIP, OSPF, IS-IS, BGP)','www.google.com = 64.233.169.105'],
     ['TCP 연결','SYN → SYNACK (→ ACK)','웹 서버와 3단계 핸드셰이크','HTTP는 TCP 위에서 동작합니다.'],
     ['HTTP 요청/응답','HTTP ⊂ TCP ⊂ IP ⊂ (링크마다 다른 프레임)','요청 → 웹 서버 → 응답(웹 페이지)','웹 페이지가 표시됩니다.']];
-  stepper(root,()=>S.map((s,i)=>({html:tbl(['단계','프로토콜','캡슐화/메시지','전달','왜 필요한가'],S.slice(0,i+1).map((x,j)=>({c:[j+1,x[0],x[1],x[2],x[3]],cls:j===i?'dm-now':''}))),note:`${i+1}. ${s[0]}`})));
+  stepper(root,()=>S.map((s,i)=>({html:tbl(['단계','프로토콜','캡슐화/메시지','전달','왜 필요한가'],S.slice(0,i+1).map((x,j)=>({c:[j+1,x[0],x[1],x[2],x[3]],cls:j===i?'dm-now':''}))),note:`${i+1}. ${s[0]}`})));},
+delay(root,n){
+  const z=n===25;
+  root.innerHTML=shell('delay',field('L','패킷 길이 L (bits)',z?'7500000':'12000','inputmode="numeric"')+field('R','링크 전송률 R (Mbps)','1.5','inputmode="decimal"')+field('d','링크 하나의 길이 d (km)',z?'0':'2000','inputmode="decimal"')+field('s','전파 속도 s (×10^8 m/s)','2','inputmode="decimal"')+field('h','링크 수 (홉)','2','inputmode="numeric"')+field('pq','홉마다 처리+큐잉 (ms)','0','inputmode="decimal"'),ctrl);
+  const ms=x=>x>=1000?(x/1000).toLocaleString('ko-KR',{maximumFractionDigits:3})+' s':x.toLocaleString('ko-KR',{maximumFractionDigits:4})+' ms';
+  stepper(root,()=>{const L=num(val(root,'L'),1,1e12,12000),R=num(val(root,'R'),1e-6,1e6,1.5),d=num(val(root,'d'),0,1e6,2000),sp=num(val(root,'s'),0.01,3,2),h=Math.round(num(val(root,'h'),1,30,2)),pq=num(val(root,'pq'),0,1e7,0);
+    const tr=L/(R*1e6)*1000,pr=d*1000/(sp*1e8)*1000,node=pq+tr+pr,tot=node*h;
+    const rows=[{c:['d_proc + d_queue','입력값',ms(pq)]},{c:['d_trans = L/R',`${L.toLocaleString()} bits ÷ ${R} Mbps`,ms(tr)]},{c:['d_prop = d/s',`${d.toLocaleString()} km ÷ ${sp}×10^8 m/s`,ms(pr)]},{c:['<b>d_nodal</b>','합계 (한 홉)',`<b>${ms(node)}</b>`],cls:'dm-now'}];
+    const bar=(a,b)=>{const t=a+b||1;return `<div class="dc-delaybar"><span class="dc-db-t" style="width:${Math.max(2,a/t*100)}%">전송 ${ms(a)}</span><span class="dc-db-p" style="width:${Math.max(2,b/t*100)}%">전파 ${ms(b)}</span></div>`;};
+    const line=Array.from({length:h},(_,i)=>`<li>${i+1}번째 링크: 패킷 전체를 받은 뒤 전송 시작 → 누적 ${ms(node*(i+1))}</li>`).join('');
+    return [{html:tbl(['지연','계산','값'],rows.slice(0,2)),note:'처리·큐잉 지연은 입력값을 그대로 씁니다(실제로는 라우터 상태에 따라 변함).'},
+      {html:tbl(['지연','계산','값'],rows.slice(0,3)),note:'전송 지연은 패킷 크기·전송률로, 전파 지연은 거리·신호 속도로 정해집니다. 서로 관계없습니다.'},
+      {html:tbl(['지연','계산','값'],rows)+bar(tr,pr),note:tr>pr?'전송 지연이 전파 지연보다 큽니다: 패킷의 첫 비트가 도착할 때 마지막 비트는 아직 송신 중입니다.':'전파 지연이 전송 지연보다 큽니다: 마지막 비트를 보낸 뒤에도 첫 비트가 아직 링크 위에 있습니다.'},
+      {html:`<ol class="dm-small">${line}</ol><div class="dm-result"><p>저장 후 전달, 링크 ${h}개: 종단간 지연 = ${h} × ${ms(node)} = <b>${ms(tot)}</b></p><p class="dm-small">자료 25쪽 공식 N·L/R은 전파·처리·큐잉을 0으로 둔 경우입니다(이때 ${ms(tr*h)}).</p></div>`,note:'라우터는 패킷 전체를 받아야 다음 링크로 보냅니다(저장 후 전달).'}];});
+},
+caravan(root,n){
+  const z=n===47;
+  root.innerHTML=shell('caravan',field('n','차 대수 (비트 수)','10','inputmode="numeric"')+field('t','요금소 처리 시간 (초/대)',z?'60':'12','inputmode="decimal"')+field('v','속도 (km/h)',z?'1000':'100','inputmode="decimal"')+field('d','요금소 간 거리 (km)','100','inputmode="decimal"'),ctrl);
+  const f=x=>x>=60?`${(x/60).toLocaleString('ko-KR',{maximumFractionDigits:2})}분`:`${x.toLocaleString('ko-KR',{maximumFractionDigits:2})}초`;
+  stepper(root,()=>{const n=Math.round(num(val(root,'n'),1,100,10)),t=num(val(root,'t'),0.01,1e5,12),v=num(val(root,'v'),1,1e6,100),d=num(val(root,'d'),0.01,1e5,100);
+    const trans=n*t,prop=d/v*3600,first=t+prop,done=Math.min(n,Math.floor(first/t+1e-9)),left=n-done;
+    const road=k=>{const cells=[];for(let i=0;i<n;i++){const leave=(i+1)*t;cells.push(k<leave?'🅿':(k<leave+prop?'🚗':'✔'));}return cells;};
+    const pic=k=>`<div class="dc-caravan"><span>요금소1 대기·처리</span><b>${road(k).filter(x=>x==='🅿').length}대</b><span>도로 위</span><b>${road(k).filter(x=>x==='🚗').length}대</b><span>요금소2 도착</span><b>${road(k).filter(x=>x==='✔').length}대</b></div>`;
+    return [{html:`<p>대열 전체를 요금소에서 내보내는 시간 = ${n} × ${t}초 = <b>${f(trans)}</b> (전송 지연)</p>`,note:'차 = 비트, 대열 = 패킷, 요금소 처리 = 전송.'},
+      {html:`<p>마지막 차가 ${d} km를 ${v} km/h로 가는 시간 = <b>${f(prop)}</b> (전파 지연)</p>`,note:'도로 주행 = 전파.'},
+      {html:`<p>선두 차의 요금소2 도착: ${f(t)} + ${f(prop)} = <b>${f(first)}</b></p>${pic(first)}`,note:left>0?`이 시각에 아직 ${left}대가 요금소1에 남아 있습니다(첫 비트가 도착할 때 마지막 비트는 아직 이전 라우터에).`:'선두 차가 도착하기 전에 모든 차가 요금소1을 떠났습니다.'},
+      {html:`<div class="dm-result"><p>마지막 차의 요금소2 도착 = 전송 ${f(trans)} + 전파 ${f(prop)} = <b>${f(trans+prop)}</b></p></div>${pic(trans+prop)}`,note:'자료 46쪽 기본값(10대, 12초, 100 km/h, 100 km)이면 62분, 47쪽(1분/대, 1000 km/h)이면 선두 7분·남은 3대입니다.'}];});
+},
+queue(root){
+  root.innerHTML=shell('queue',field('L','패킷 길이 L (bits)','1000','inputmode="numeric"')+field('a','평균 도착률 a (패킷/s)','500','inputmode="decimal"')+field('R','링크 전송률 R (Mbps)','1','inputmode="decimal"')+field('B','버퍼 크기 (패킷)','100','inputmode="numeric"'),ctrl);
+  stepper(root,()=>{const L=num(val(root,'L'),1,1e9,1000),a=num(val(root,'a'),0,1e9,500),R=num(val(root,'R'),1e-6,1e6,1),B=Math.round(num(val(root,'B'),1,1e7,100));
+    const I=L*a/(R*1e6),pct=Math.min(100,I*100);
+    const cls=I<0.3?'0에 가까움 → 평균 큐잉 지연 작음':I<1?(I>=0.8?'1에 가까움 → 평균 큐잉 지연이 급격히 커짐':'중간 → 지연이 점점 커지는 구간'):'1 이상 → 처리 가능량보다 많이 도착, 큐가 계속 늘어남(평균 지연 무한대)';
+    const gauge=`<div class="dc-gauge"><span style="width:${pct}%" class="${I>=1?'dc-g-bad':I>=0.8?'dc-g-warn':''}"></span></div><p class="dm-small">0 ─────── 0.8 ── 1</p>`;
+    const steps=[{html:`<p>초당 도착 비트 = L·a = ${L.toLocaleString()} × ${a.toLocaleString()} = ${(L*a).toLocaleString()} bps</p><p>링크 전송률 R = ${(R*1e6).toLocaleString()} bps</p>`,note:'도착하는 비트와 내보낼 수 있는 비트를 비교합니다.'},
+      {html:`<p>트래픽 강도 La/R = <b>${I.toLocaleString('ko-KR',{maximumFractionDigits:4})}</b></p>${gauge}<div class="dm-result"><p>${cls}</p></div>`,note:'자료 48쪽의 해석 기준입니다. 정확한 지연 값은 도착 패턴에 따라 달라 이 실험은 구간만 판정합니다.'}];
+    if(I>1){const grow=a-R*1e6/L,tl=B/grow;steps.push({html:`<p>초당 큐 증가 ≈ a − R/L = ${a.toLocaleString()} − ${(R*1e6/L).toLocaleString('ko-KR',{maximumFractionDigits:2})} = ${grow.toLocaleString('ko-KR',{maximumFractionDigits:2})} 패킷/s</p><div class="dm-result"><p>버퍼 ${B}패킷이 약 <b>${tl.toLocaleString('ko-KR',{maximumFractionDigits:3})}초</b> 뒤 가득 차고, 그 뒤 도착하는 패킷은 <b>손실</b>됩니다.</p></div>`,note:'평균 도착률이 일정하다고 본 단순 모델입니다(자료 26·51쪽: 버퍼가 차면 손실).'});}
+    else steps.push({html:`<div class="dm-result"><p>평균적으로는 처리 가능하지만, 도착이 순간적으로 몰리면(bursty) 큐가 생기고 버퍼(${B}패킷)를 넘으면 손실될 수 있습니다.</p></div>`,note:'자료 43쪽: 도착률이 "일시적으로" 출력 용량을 넘을 때 큐잉이 생깁니다.'});
+    return steps;});
+},
+pvc(root){
+  root.innerHTML=shell('pvc',field('C','링크 용량 (Mbps)','1','inputmode="decimal"')+field('u','활동 시 사용자당 (kbps)','100','inputmode="decimal"')+field('p','활동 확률 (0~1)','0.1','inputmode="decimal"')+field('N','패킷 교환 사용자 수','35','inputmode="numeric"'),ctrl);
+  const C_=(n,k)=>{let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r;};
+  stepper(root,()=>{const C=num(val(root,'C'),0.001,1e6,1),u=num(val(root,'u'),0.001,1e9,100),p=num(val(root,'p'),0,1,0.1),N=Math.round(num(val(root,'N'),1,1000,35));
+    const cap=Math.floor(C*1000/u+1e-9);const pk=k=>C_(N,k)*p**k*(1-p)**(N-k);
+    let over=0;for(let k=cap+1;k<=N;k++)over+=pk(k);let geq=0;for(let k=cap;k<=N;k++)geq+=pk(k);
+    const show=[];for(let k=Math.max(0,cap-3);k<=Math.min(N,cap+4);k++)show.push({c:[k,pk(k).toExponential(3)],cls:k>cap?'dm-now':''});
+    const fmt=x=>x<1e-3?x.toExponential(3):x.toFixed(5);
+    return [{html:`<p>회선 교환: 각 사용자에게 ${u} kbps를 예약 → ${C*1000} ÷ ${u} = <b>${cap}명</b>까지 수용</p>`,note:'사용하지 않는 동안에도 예약한 회선은 비어 있습니다.'},
+      {html:`<p>패킷 교환: ${N}명이 각각 확률 ${p}로 활동 → 동시 활동자 수 k는 이항분포 B(${N}, ${p})</p>${tbl(['동시 활동 k명','P(k)'],show)}`,note:`강조한 행(k > ${cap})이 링크 용량을 넘는 경우입니다.`},
+      {html:`<div class="dm-result"><p>P(동시 활동 &gt; ${cap}명) = P(k ≥ ${cap+1}) = <b>${fmt(over)}</b></p><p class="dm-small">참고: P(k ≥ ${cap}) = ${fmt(geq)} · 자료 30쪽(35명, 0.1)은 "10명 초과" 확률 ≈ 0.0004입니다.</p></div>`,note:over<0.001?'초과 확률이 매우 작으므로 패킷 교환이 회선 교환보다 많은 사용자를 수용합니다.':'초과 확률이 무시하기 어려운 크기입니다. 사용자 수나 활동 확률을 줄여 보세요.'}];});
+},
+thru(root){
+  root.innerHTML=shell('thru',field('Rs','서버 접속 링크 Rs (Mbps)','2','inputmode="decimal"')+field('Rc','클라이언트 접속 링크 Rc (Mbps)','1','inputmode="decimal"')+field('R','공유 백본 R (Mbps, 없으면 0)','5','inputmode="decimal"')+field('k','백본을 공유하는 연결 수','10','inputmode="numeric"')+field('F','파일 크기 F (Mbits)','32','inputmode="decimal"'),ctrl);
+  stepper(root,()=>{const Rs=num(val(root,'Rs'),0.001,1e6,2),Rc=num(val(root,'Rc'),0.001,1e6,1),R=num(val(root,'R'),0,1e7,5),k=Math.round(num(val(root,'k'),1,1e5,10)),F=num(val(root,'F'),0,1e9,32);
+    const c=[['Rs (서버측)',Rs],['Rc (클라이언트측)',Rc]];if(R>0)c.push([`R/${k} (백본 몫)`,R/k]);
+    const m=Math.min(...c.map(x=>x[1])),f=x=>x.toLocaleString('ko-KR',{maximumFractionDigits:4});
+    return [{html:tbl(['링크','연결 하나가 쓸 수 있는 용량'],c.map(x=>({c:[x[0],f(x[1])+' Mbps']}))),note:'공유 링크는 공정하게 나눈 몫으로 봅니다(자료 54쪽).'},
+      {html:tbl(['링크','용량'],c.map(x=>({c:[x[0],f(x[1])+' Mbps'],cls:x[1]===m?'dm-now':''})))+`<div class="dm-result"><p>종단간 처리율 = min(…) = <b>${f(m)} Mbps</b> · 병목: ${c.filter(x=>x[1]===m).map(x=>x[0]).join(', ')}</p></div>`,note:'처리율은 경로에서 가장 느린 링크가 결정합니다.'},
+      {html:`<div class="dm-result"><p>F = ${f(F)} Mbits 전송 시간 ≈ F / 처리율 = <b>${f(F/m)} 초</b></p></div>`,note:'지연(전파·큐잉)은 무시한 근사입니다.'}];});
+},
+encap(root){
+  root.innerHTML=shell('encap',field('m','응용 메시지 M','GET /index.html'),ctrl);
+  stepper(root,()=>{const M=esc(val(root,'m')||'M');
+    const hd=(h,c)=>`<span class="dc-h ${c}">${h}</span>`,msg=`<span class="dc-m">${M}</span>`;
+    const L=[['application','message',msg],['transport','segment',hd('Ht','t')+msg],['network','datagram',hd('Hn','n')+hd('Ht','t')+msg],['link','frame',hd('Hl','l')+hd('Hn','n')+hd('Ht','t')+msg],['physical','비트','0110…']];
+    const stack=(cur,where,top,dir)=>`<p class="dm-small"><b>${where}</b>${top?` · 회색 계층은 이 장비에 없음`:''}</p><div class="dm-scroll"><table class="dm-table"><tbody>${L.map((x,i)=>{const on=i>=top&&(dir==='down'?i<=cur:dir==='up'?i>=cur:true);return `<tr class="${i===cur?'dm-now':''}${i<top?' dc-dim':''}"><td>${x[0]}</td><td>${x[1]}</td><td class="dc-pdu">${on?x[2]:''}</td></tr>`;}).join('')}</tbody></table></div>`;
+    const S=[];for(let i=0;i<5;i++)S.push({html:stack(i,'출발지 호스트',0,'down'),note:i===0?'응용이 메시지 M을 만듭니다.':i===4?'물리 계층이 프레임을 비트로 전송합니다.':`${L[i][0]} 계층이 헤더를 붙여 ${L[i][1]}가 됩니다.`});
+    S.push({html:stack(3,'스위치 (link·physical만 구현)',3,'all'),note:'스위치는 링크 헤더 Hl까지만 보고 전달합니다. IP 헤더(Hn)는 보지 않습니다.'});
+    S.push({html:stack(2,'라우터 (network까지 구현)',2,'all'),note:'라우터는 Hn(목적지 IP)을 보고 출력 링크를 정한 뒤 새 링크 헤더를 붙여 내보냅니다.'});
+    for(let i=4;i>=0;i--)S.push({html:stack(i,'목적지 호스트',0,'up'),note:i===4?'비트를 수신해 프레임으로 모읍니다.':i===0?'응용이 원래 메시지 M을 받습니다.':`${L[i+1][0]} 계층 헤더를 벗겨 ${L[i][0]} 계층에 ${L[i][1]}를 올립니다.`});
+    return S;});
 }};
 const DC={mode,stop,mount(root,ch,n){stop();const k=mode(ch,n);if(!k){root.innerHTML='';return;}try{LABS[k](root,n);}catch(e){root.innerHTML=`<p class="dm-err">실험을 불러오지 못했습니다: ${esc(e.message)}</p>`;}}};
 window.DCLab=DC;
