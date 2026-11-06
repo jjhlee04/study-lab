@@ -202,3 +202,5 @@ Apple Pencil 몸통 두 번 탭 자동 전환은 구현하지 않았습니다. �
 Learning tabs fade out after 2 seconds without scrolling. Pointer interaction or keyboard focus keeps them available; revealing and hiding the tabs does not change the reading position.
 
 The transient reading tab bar includes a course-menu button. It opens the current course navigation and other courses without returning to the page header. Closing the menu preserves the reading position; the tab bar remains visible while the dialog is open. Local QA covered desktop/tablet/mobile layouts, single-page and continuous readers, Unix routes, touch, keyboard focus and dark mode.
+
+Page-level Explanation / Source / Quiz links appear beside the page title and at the end of each view. Switching keeps the same PDF page and remembers each view's reading offset for the open tab. Quiz controls are omitted when no quiz exists; the continuous quiz stream skips those pages. The original Unix reader uses the same links while retaining its existing progress keys. Local QA covered desktop/mobile round trips, position restoration, retained grading, the no-quiz case, and the course menu.

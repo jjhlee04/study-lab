@@ -1,0 +1,7 @@
+.reader-page-links{display:flex;align-items:center;gap:4px;flex-wrap:wrap;position:relative;z-index:16;width:fit-content;max-width:100%}
+.reader-page-links button{font:600 13px/1.4 "Pretendard Variable","Malgun Gothic",sans-serif!important;min-height:36px;padding:7px 12px;border:1px solid #cfdee6;border-radius:7px;background:#fff;color:#38576b;cursor:pointer;margin:0;touch-action:manipulation}
+.reader-page-links button:not(:disabled):hover{background:#edf7f7;border-color:#84b6b7}.reader-page-links button[aria-pressed=true]{background:#e5f4f3;color:#00646b;border-color:#b1d7d4;opacity:1;cursor:default}.reader-page-links button:disabled:not([aria-pressed=true]){color:#71818c;background:#f6f8fa;cursor:default}.reader-page-links button:focus-visible{outline:3px solid #087f84;outline-offset:2px}
+.reader-links-top{margin:4px 0 12px}.reader-links-bottom{margin:24px 0 8px;padding-top:12px;border-top:1px solid #dce6ec;width:100%;justify-content:flex-end}.cr-sheet .cs-pageheading h2{margin-bottom:8px}
+@media(max-width:760px){.reader-page-links button{min-height:40px;padding:8px 12px}.cs-pageheading>div{min-width:0}.reader-links-top{margin:6px 0 10px}.reader-links-bottom{margin-top:18px}}
+.reader-page-links button[hidden],.cs-view-tabs button[hidden]{display:none!important}
+.cr-sheet[hidden]{display:none!important}
