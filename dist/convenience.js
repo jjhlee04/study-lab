@@ -117,7 +117,7 @@ function openSettings(){const d=dialog('cv-settings','편의 설정',`
   d.querySelector('#cv-nb-settings').onclick=()=>{d.close();window.NotebookOptions?.openSettings();};
   d.querySelector('#cv-export').onclick=()=>{const n=exportAll();d.querySelector('#cv-msg').textContent=`${n}개 기록을 백업 파일로 저장했습니다.`;};
   d.querySelector('#cv-import').onclick=async()=>{const f=d.querySelector('#cv-file').files[0],msg=d.querySelector('#cv-msg');if(!f){msg.textContent='백업 파일을 먼저 선택하세요.';return;}const mode=d.querySelector('[name=cv-im]:checked').value;if(mode==='replace'&&!d.querySelector('#cv-import').dataset.sure){d.querySelector('#cv-import').dataset.sure='1';msg.textContent='덮어쓰면 지금 기록이 백업 시점으로 바뀝니다. 계속하려면 한 번 더 누르세요.';return;}
-    try{const n=await importAll(f,mode);msg.textContent=`${n}개 기록을 불러왔습니다. 화면을 새로 고칩니다…`;setTimeout(()=>location.reload(),900);}catch(err){msg.textContent=err.message;}};}
+    try{const n=await importAll(f,mode);window.__studyApplyingCloud=true;msg.textContent=`${n}개 기록을 불러왔습니다. 화면을 새로 고칩니다…`;setTimeout(()=>location.reload(),900);}catch(err){msg.textContent=err.message;}};}
 
 /* ── 단축키 ── */
 document.addEventListener('keydown',ev=>{if(ev.defaultPrevented||ev.ctrlKey||ev.metaKey||ev.altKey)return;const t=ev.target;if(t.closest&&t.closest('input,textarea,select,[contenteditable="true"],[role=tab],dialog'))return;
