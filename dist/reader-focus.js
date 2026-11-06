@@ -27,4 +27,22 @@ reveal.addEventListener('lostpointercapture',e=>{if(gesture?.id===e.pointerId)en
 reveal.addEventListener('click',e=>{if(performance.now()<suppressClickUntil){e.preventDefault();e.stopImmediatePropagation();}},true);
 reveal.addEventListener('keydown',e=>{const d={ArrowLeft:[-24,0],ArrowRight:[24,0],ArrowUp:[0,-24],ArrowDown:[0,24]}[e.key];if(!d)return;e.preventDefault();const r=reveal.getBoundingClientRect();placeIcon(r.left+d[0],r.top+d[1]);saveIcon();});
 reveal.addEventListener('contextmenu',e=>e.preventDefault());reveal.addEventListener('dragstart',e=>e.preventDefault());window.addEventListener('resize',restoreIcon);window.visualViewport?.addEventListener('resize',restoreIcon);window.visualViewport?.addEventListener('scroll',restoreIcon);restoreIcon();
+// Learning controls appear while scrolling without changing document layout.
+const AUTO_TABS='.continuous-reader>.cr-tabs,.cs-reader:not(.continuous-reader) .cs-view-tabs,.workspace .tabs';
+let visibleTabs=null,tabsTimer=null,heldTabPointer=null,keyboardTabs=false;
+function prepareAutoTabs(){document.querySelectorAll(AUTO_TABS).forEach(nav=>nav.classList.add('reader-auto-tabs'));}
+function activeTabs(){return [...document.querySelectorAll(AUTO_TABS)].find(nav=>nav.getClientRects().length);}
+function tabsFor(target){return target instanceof Element?target.closest('.reader-auto-tabs'):null;}
+function scheduleTabsHide(){clearTimeout(tabsTimer);tabsTimer=setTimeout(()=>{if(!visibleTabs)return;if(heldTabPointer!==null||keyboardTabs&&visibleTabs.contains(document.activeElement))return;visibleTabs.classList.remove('reader-tabs-visible');visibleTabs=null;},2000);}
+function showTabs(nav=activeTabs()){if(!nav)return;if(visibleTabs&&visibleTabs!==nav)visibleTabs.classList.remove('reader-tabs-visible');visibleTabs=nav;nav.classList.add('reader-tabs-visible');scheduleTabsHide();}
+window.addEventListener('scroll',()=>showTabs(),{passive:true});
+document.addEventListener('pointerdown',e=>{keyboardTabs=false;const nav=tabsFor(e.target);if(nav){heldTabPointer=e.pointerId;showTabs(nav);}else if(visibleTabs)scheduleTabsHide();},true);
+function releaseTabs(e){if(heldTabPointer!==e.pointerId)return;heldTabPointer=null;if(visibleTabs)scheduleTabsHide();}
+document.addEventListener('pointerup',releaseTabs,true);document.addEventListener('pointercancel',releaseTabs,true);
+document.addEventListener('keydown',e=>{if(e.key==='Tab')keyboardTabs=true;const nav=tabsFor(e.target);if(nav){keyboardTabs=true;showTabs(nav);}},true);
+document.addEventListener('focusin',e=>{const nav=tabsFor(e.target);if(nav&&keyboardTabs)showTabs(nav);});
+document.addEventListener('focusout',()=>{if(visibleTabs)scheduleTabsHide();});
+document.addEventListener('click',e=>{const nav=tabsFor(e.target);if(nav)showTabs(nav);},true);
+for(const id of ['school-app','panel']){const el=document.getElementById(id);if(el)new MutationObserver(prepareAutoTabs).observe(el,{childList:true});}
+window.addEventListener('pagehide',()=>{clearTimeout(tabsTimer);heldTabPointer=null;});prepareAutoTabs();
 })();

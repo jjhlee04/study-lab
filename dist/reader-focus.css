@@ -22,3 +22,6 @@ body.reading-wide.s-menu-open .s-side{z-index:50}
 .cs-view-tabs::before,body:not(.lib-view) .tabs::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:var(--reader-top-inset);background:#fff;pointer-events:none}
 .cr-sheet{scroll-margin-top:calc(64px + var(--reader-top-inset))}
 #notebook-reveal{scroll-margin-top:var(--reader-top-inset)}
+.reader-auto-tabs{opacity:0!important;pointer-events:none;transition:opacity .14s ease-out}
+.reader-auto-tabs.reader-tabs-visible,.reader-auto-tabs:focus-visible{opacity:1!important;pointer-events:auto}
+@media(prefers-reduced-motion:reduce){.reader-auto-tabs{transition:none}}

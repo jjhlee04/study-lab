@@ -194,7 +194,9 @@ Apple Pencil 몸통 두 번 탭 자동 전환은 구현하지 않았습니다. �
 - 원고: `authoring/data-communication/w10.py`, `build.py`.
 # Focused reading (November 2026)
 
-- Prepared PL, discrete math and data communication chapters support continuous vertical reading with pinned learning tabs and a single-page alternative. Uploaded custom materials and the original Unix lab retain their existing reader.
+- Prepared PL, discrete math and data communication chapters support continuous vertical reading with learning tabs that appear during scrolling and a single-page alternative. Uploaded custom materials and the original Unix lab retain their existing reader.
 - Wider reading canvas, compact course header and inline quiz/completion updates avoid unnecessary scroll resets.
 - The toolbar folds into a 40px pencil icon. Text selection/copy is disabled by default, with a settings toggle; editing text fields remains available.
 - Local Chrome QA covered desktop/mobile layouts, reader mode switching, grading position, handwriting persistence, settings and flashcard regression. No production browser or physical iPad check was performed.
+
+Learning tabs fade out after 2 seconds without scrolling. Pointer interaction or keyboard focus keeps them available; revealing and hiding the tabs does not change the reading position.
