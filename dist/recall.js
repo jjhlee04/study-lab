@@ -33,9 +33,8 @@
   const sessionKey = () => `${Core.dayKey()}:${course}:${scope}`;
   function cards() {
     const list = bank().filter(c => c.course === course);
-    if (scope === 'all') return list;
-    const ranges = window.StudyLibrary?.scope(course, scope);
-    return list.filter(c => ranges && Object.hasOwn(ranges, c.src[0]) && (ranges[c.src[0]] === null || ranges[c.src[0]].includes(c.src[1])));
+    const ranges = scope === 'all' ? null : window.StudyLibrary?.scope(course, scope);
+    return window.PlannerCore.eligible(list, db.records, ranges, window.StudyPlanner?.learned(course)||{});
   }
   const todayPlan = () => Core.plan(cards(), db.records, day());
   function clock(seconds) {
@@ -76,7 +75,12 @@
   function mount(target, options) {
     leave(); root = target; course = options.course; scope = options.scope;
     session = db.sessions[sessionKey()] || null;
-    if (session) session.running = false;
+    if (session) {
+      session.running = false;
+      const allowed = new Set(cards().map(c=>c.id));
+      session.queue = (session.queue||[]).filter(item=>allowed.has(item.id));
+      if(session.currentId&&!allowed.has(session.currentId)){session.currentId=null;session.draft='';session.feedback=null;}
+    }
     view = 'plan'; lastTick = performance.now(); render();
     const modal = $('#st-tools');
     if (modal && !modal.dataset.recallCloseBound) {
@@ -103,7 +107,7 @@
   }
   function renderPlan() {
     const p = todayPlan(), d = day(), resumable = session && !session.finished && day().seconds<900 && (session.feedback || session.queue?.some(item=>item.after<=session.attempts));
-    root.innerHTML = `<section class="rc-plan rc-shell"><p class="rc-eyebrow">매일 조금씩, 기억을 꺼내는 시간</p><h3>${esc(names[course] || course)}<br><span>오늘의 15분</span></h3><p class="rc-intro">답을 고르지 않고, 직접 떠올려 적어 보세요.</p><div class="rc-plan-stats"><div><strong>${p.due.length}</strong><span>복습할 카드</span></div><div><strong>${p.selected.filter(c=>c.kind==='new').length}</strong><span>새 카드 · 최대</span></div><div><strong>${clock(d.seconds)}</strong><span>오늘 공부한 시간</span></div></div><progress class="rc-progress" max="900" value="${Math.min(900,d.seconds)}" aria-label="오늘의 15분 목표"></progress>${cards().length ? `<button class="rc-primary" id="rc-start" ${!resumable && !p.selected.length?'disabled':''}>${resumable?'이어서 복습하기':d.seconds>=900?'오늘 목표를 채웠어요':p.selected.length?'오늘 복습 시작':'오늘 예정된 복습을 마쳤어요'}</button>` : '<p class="rc-empty">이 범위에는 단답형 카드가 없습니다. 다른 범위를 선택해 주세요.</p>'}${p.due.length ? `<p class="rc-caption">복습 기한이 지난 카드부터 시작하고, 시간이 남으면 새 카드를 조금씩 더해요.</p>` : p.fresh.length ? '<p class="rc-caption">처음에는 새 카드 3장으로 가볍게 시작해요.</p>' : '<p class="rc-caption">다음 복습일에 다시 만나요.</p>'}${!p.selected.length && !p.due.length && p.fresh.length && d.seconds<900 ? '<button class="rc-text-button" id="rc-extra">새 카드 3장 더 공부하기</button>' : ''}${help()}</section>`;
+    root.innerHTML = `<section class="rc-plan rc-shell"><p class="rc-eyebrow">매일 조금씩, 기억을 꺼내는 시간</p><h3>${esc(names[course] || course)}<br><span>오늘의 15분</span></h3><p class="rc-intro">답을 고르지 않고, 직접 떠올려 적어 보세요.</p><div class="rc-plan-stats"><div><strong>${p.due.length}</strong><span>복습할 카드</span></div><div><strong>${p.selected.filter(c=>c.kind==='new').length}</strong><span>새 카드 · 최대</span></div><div><strong>${clock(d.seconds)}</strong><span>오늘 공부한 시간</span></div></div><progress class="rc-progress" max="900" value="${Math.min(900,d.seconds)}" aria-label="오늘의 15분 목표"></progress>${cards().length ? `<button class="rc-primary" id="rc-start" ${!resumable && !p.selected.length?'disabled':''}>${resumable?'이어서 복습하기':d.seconds>=900?'오늘 목표를 채웠어요':p.selected.length?'오늘 복습 시작':'오늘 예정된 복습을 마쳤어요'}</button>` : '<p class="rc-empty">새 카드가 없습니다. 배운 범위와 시험범위를 설정해 주세요.</p>'}${p.due.length ? `<p class="rc-caption">복습 기한이 지난 카드부터 시작하고, 시간이 남으면 새 카드를 조금씩 더해요.</p>` : p.fresh.length ? '<p class="rc-caption">처음에는 새 카드 3장으로 가볍게 시작해요.</p>' : '<p class="rc-caption">배운 범위 안에서 새 카드를 추가합니다. 이전에 공부한 카드는 복습 일정에 따라 함께 나옵니다.</p>'}${!p.selected.length && !p.due.length && p.fresh.length && d.seconds<900 ? '<button class="rc-text-button" id="rc-extra">새 카드 3장 더 공부하기</button>' : ''}${help()}</section>`;
     const start = $('#rc-start',root);
     if (start) start.onclick = () => {
       if (!resumable) create(p.selected);
@@ -111,6 +115,9 @@
       view = 'session'; lastTick = performance.now(); save(); render();
     };
     if ($('#rc-extra',root)) $('#rc-extra',root).onclick = extra;
+    root.insertAdjacentHTML('beforeend',window.StudyPlanner?.learnedForm(course)||'');
+    if(scope!=='all'){const link=document.createElement('a');link.className='rc-text-button';link.href='#/course/'+encodeURIComponent(course)+'/exams';link.textContent='시험범위 설정';link.onclick=()=>$('#st-tools').close();root.append(link);}
+    window.StudyPlanner?.bindLearned(root,course,()=>mount(root,{course,scope}));
   }
   function create(queue) {
     session = {date:Core.dayKey(), course, scope, queue:structuredClone(queue), seconds:0, attempts:0, correct:0, repeats:{}, history:[], running:true, draft:'', confidence:'sure', cardSeconds:0};
@@ -239,5 +246,15 @@
   window.addEventListener('focus',()=>{lastTick=performance.now();});
   window.addEventListener('pagehide',leave);
   setInterval(()=>{tick();if(session?.running&&!root?.isConnected)leave();},1000);
-  window.RecallPractice={mount,leave,dashboard};
+  function summary(cid,selectedScope='final',date=Core.dayKey()) {
+    const records=db.records,list=bank().filter(c=>c.course===cid);
+    if(!list.length)return null;
+    if(date!==Core.dayKey()){const d=db.days[date]?.[cid];return d?.attempts?{due:0,fresh:0,selected:0,remaining:0,attempts:d.attempts,seconds:d.seconds}:null;}
+    const ranges=selectedScope==='all'?null:window.StudyLibrary?.scope(cid,selectedScope);
+    const allowed=window.PlannerCore.eligible(list,records,ranges,window.StudyPlanner?.learned(cid)||{});
+    const daily=day(cid),p=Core.plan(allowed,records,daily);
+    const pending=Object.values(db.sessions).some(s=>s.date===Core.dayKey()&&s.course===cid&&!s.finished&&s.queue?.length);
+    return {due:p.due.length,fresh:p.selected.filter(c=>c.kind==='new').length,selected:p.selected.length+Number(pending),remaining:p.remaining,attempts:daily.attempts,seconds:daily.seconds};
+  }
+  window.RecallPractice={mount,leave,dashboard,summary};
 })();

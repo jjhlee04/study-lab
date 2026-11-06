@@ -293,5 +293,5 @@ function reviewCard(id,known){if(!byId(id))return false;if(known)srsUpdate(id,tr
 setInterval(checkDeadlines,1000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDeadlines();});
 checkDeadlines();
-window.MockExam={reviewCard,mount,bank,isCorrect,_db:()=>db,dueIds,startExam,dday,scopeStatus,doneSet,pageQuizWrongs,courseHasBank};
+window.MockExam={dates:()=>structuredClone(db.dates),setFinalDates(values){const old=structuredClone(db.dates);for(const [id,date]of Object.entries(values)){db.dates[id]??={};db.dates[id].final=date;}save();if(saveFailed)db.dates=old;return !saveFailed;},reviewCard,mount,bank,isCorrect,_db:()=>db,dueIds,startExam,dday,scopeStatus,doneSet,pageQuizWrongs,courseHasBank};
 })();
