@@ -36,7 +36,7 @@ const revisions={
  'dc-s15':{type:'cloze',q:'IEEE 802.1Q 태그의 VLAN ID 필드는 ___비트이다.',answer:['12']}
 };
 const exact=new Set(['ux-s08','ux-s09','ux-s10','ux-s11','ux-s13','ux-s14','ux-s15','ux-s19','ux-s22','ux-s24','ux-s25','ux-s27','ux-s33','ux-s34','ux-s35','ux-s36','ux-s38','ux-s39','ux-s40','dc-s03','dc-s04','dc-s13']);
-window.RECALL_CARDS=(window.EXAM_BANK||[]).filter(x=>x.type==='short'&&!omit.has(x.id)).map(x=>{
+window.RECALL_CARDS=[...(window.EXAM_BANK||[]), ...(window.W09_EXAM||[])].filter(x=>x.type==='short'&&!omit.has(x.id)).map(x=>{
  const r=revisions[x.id]||{},answers=r.answer||x.answer;
  return {id:'recall-'+x.id,originId:x.id,course:x.course,src:x.src,type:r.type||'short',q:r.q||x.q,answers:[...new Set(answers)],why:r.why||x.why,mode:r.mode||(exact.has(x.id)?'verbatim':/^[+−-]?(?:\d|\.)/.test(answers[0])?'formula':'term')};
 });

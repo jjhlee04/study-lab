@@ -35,6 +35,7 @@ function bank(){
     }
   }
   for(const x of window.EXAM_BANK||[])list.push(x);
+  for(const x of window.W09_EXAM||[])list.push(x);
   bankCache=list;return list;
 }
 const byId=id=>bank().find(x=>x.id===id);

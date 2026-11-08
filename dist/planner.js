@@ -99,12 +99,12 @@
     return out;
   }
   function materials(cid){
-    if(cid==='unix')return [['unix-w01','w01 · 강의 소개와 Linux',29],['unix-w02','w02 · Linux 명령어·vi·Makefile',75],['unix-w06','w06 · 파일 시스템과 파일 입출력',73]].map(([id,title,pages])=>({id,title,pages}));
+    if(cid==='unix')return [['unix-w01','w01 · 강의 소개와 Linux',29],['unix-w02','w02 · Linux 명령어·vi·Makefile',75],['unix-w06','w06 · 파일 시스템과 파일 입출력',73],['unix-w09','w09 · 표준 입출력',48]].map(([id,title,pages])=>({id,title,pages}));
     return (window.COURSE_CHAPTERS||[]).filter(c=>(c.course||'programming-languages')===cid).map(c=>({id:c.id,title:c.title,pages:c.pages.length}));
   }
   function learnedForm(cid){
     const values=read().learned?.[cid]||{},ms=materials(cid);
-    return `<details class="pl-learned"><summary>배운 범위 설정</summary><p>수업에서 배운 쪽을 입력하세요. 복습 중인 카드는 계속 나옵니다.</p><form id="pl-learned-form">${ms.map(m=>`<label>${esc(m.title)}<span class="pl-learned-input"><input data-learned="${esc(m.id)}" data-max="${m.pages}" value="${esc(values[m.id]||'')}" placeholder="1-30 또는 전체" maxlength="500"><small>/ ${m.pages}쪽</small></span></label>`).join('')||'<p>등록된 교재가 없습니다.</p>'}<p id="pl-learned-message" role="status"></p>${ms.length?'<button type="submit" class="s-btn">범위 저장</button>':''}</form></details>`;
+    return `<details class="pl-learned"><summary>배운 범위 설정</summary><p>수업에서 배운 쪽을 입력하세요. 선택한 범위에 속한 복습 카드가 나옵니다.</p><form id="pl-learned-form">${ms.map(m=>`<label>${esc(m.title)}<span class="pl-learned-input"><input data-learned="${esc(m.id)}" data-max="${m.pages}" value="${esc(values[m.id]||'')}" placeholder="1-30 또는 전체" maxlength="500"><small>/ ${m.pages}쪽</small></span></label>`).join('')||'<p>등록된 교재가 없습니다.</p>'}<p id="pl-learned-message" role="status"></p>${ms.length?'<button type="submit" class="s-btn">범위 저장</button>':''}</form></details>`;
   }
   function bindLearned(root,cid,onSaved){const form=$('#pl-learned-form',root);if(!form)return;form.onsubmit=ev=>{ev.preventDefault();const values={};try{for(const input of $$('[data-learned]',form)){Core.range(input.value,Number(input.dataset.max));values[input.dataset.learned]=input.value.trim();}}catch(e){$('#pl-learned-message',form).textContent=e.message;return;}if(update(d=>d.learned[cid]=values)){onSaved();notice('배운 범위를 저장했습니다.');}};}
   function enhancements(){

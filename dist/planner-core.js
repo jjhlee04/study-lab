@@ -34,9 +34,9 @@
   function inScope(card, scope) {
     return scope === null || !!(scope && Object.hasOwn(scope,card.src[0]) && (scope[card.src[0]]===null || scope[card.src[0]].includes(card.src[1])));
   }
-  // Existing memories survive a change of exam or learned range. Only new cards are gated.
-  function eligible(cards, records, scope, learned) {
-    return cards.filter(card => records[card.id] || (inScope(card,scope) && !!learned[card.src[0]]?.includes(card.src[1])));
+  // Keep review records, and select only cards inside the active study range.
+  function eligible(cards, scope, learned) {
+    return cards.filter(card => inScope(card,scope) && !!learned[card.src[0]]?.includes(card.src[1]));
   }
   root.PlannerCore = Object.freeze({parse,key,today,add,week,range,inScope,eligible,termStart,examStart,examEnd});
 })(globalThis);
