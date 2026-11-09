@@ -6,6 +6,7 @@
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const defaults=[['unix','유닉스 프로그래밍'],['programming-languages','프로그래밍언어론'],['discrete-math','이산수학'],['data-centric-ml','데이터중심머신러닝'],['data-communication','데이터통신']];
   const read=()=>{try{const d=JSON.parse(localStorage.getItem(KEY)||'{}');return d&&typeof d==='object'&&!Array.isArray(d)?d:{};}catch{return {};}};
+  const timerOwner=crypto.randomUUID();
   let host=null, selected=Core.today(), month=selected.slice(0,7), courses=[], calendarOpen=false;
   function notice(text){window.StudyTools?.notice(text);}
   function update(change){
@@ -31,12 +32,77 @@
   function deadlineLinks(rows){
     return rows.map(a=>`<a href="${window.StudyAssignments.href(a.cid,a.id)}">${esc(window.StudyAssignments.dueText(a))} · ${esc(a.title)}</a>`).join('');
   }
+  const dayTime=(data,date=selected)=>data.studyTime?.[date]||{};
+  const totalTime=(data,date=selected)=>Object.values(dayTime(data,date)).reduce((sum,ms)=>sum+ms,0);
+  function timeLabel(ms){
+    const seconds=Math.floor(ms/1000), hours=Math.floor(seconds/3600), minutes=Math.floor(seconds%3600/60);
+    return [hours&&hours+'시간',minutes&&minutes+'분',(seconds%60||!ms)&&seconds%60+'초'].filter(Boolean).join(' ')||'0초';
+  }
+  function clockLabel(ms){
+    const seconds=Math.floor(ms/1000);
+    return [Math.floor(seconds/3600),Math.floor(seconds%3600/60),seconds%60].map(n=>String(n).padStart(2,'0')).join(':');
+  }
+  const elapsed=(timer,now=Date.now())=>timer.ms+(timer.startedAt?Math.max(0,now-timer.startedAt):0);
+  function timerPanel(data){
+    const timer=data.timer;
+    if(timer){
+      const name=courses.find(c=>c.id===timer.course)?.name||timer.course;
+      const owned=timer.owner===timerOwner;
+      return `<section class="pl-timer" aria-label="공부 타이머"><div><strong>${esc(name)}</strong>
+        <small>${fmt(timer.date)} · ${timer.startedAt?'측정 중':'일시정지'}</small></div>
+        <span id="pl-clock" class="pl-clock">${clockLabel(elapsed(timer))}</span>
+        <div class="pl-timer-actions">
+          ${!timer.startedAt||owned?`<button type="button" id="pl-toggle-timer">${timer.startedAt?'일시정지':'계속 공부'}</button>`:''}
+          <button type="button" id="pl-stop-timer" class="pl-primary">종료·저장</button>
+        </div></section>`;
+    }
+    return `<form class="pl-timer" id="pl-start-timer"><label>공부할 과목 <select name="course">${courses.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}</select></label><button class="pl-primary" type="submit">공부 시작</button></form>`;
+  }
+  function pauseTimer(){
+    const timer=read().timer;
+    if(!timer?.startedAt||timer.owner!==timerOwner)return;
+    update(d=>{
+      const t=d.timer;
+      if(t?.startedAt&&t.owner===timerOwner){t.ms=elapsed(t);t.startedAt=null;}
+    });
+  }
+  function bindTimer(){
+    $('#pl-start-timer',host)?.addEventListener('submit',ev=>{
+      ev.preventDefault();
+      const course=new FormData(ev.target).get('course');
+      if(update(d=>{d.timer??={id:crypto.randomUUID(),course,date:selected,ms:0,startedAt:Date.now(),owner:timerOwner};}))refresh();
+    });
+    $('#pl-toggle-timer',host)?.addEventListener('click',()=>{
+      const t=read().timer;
+      if(t?.startedAt)pauseTimer();
+      else update(d=>{
+        if(d.timer&&!d.timer.startedAt){d.timer.startedAt=Date.now();d.timer.owner=timerOwner;}
+      });
+      refresh();
+    });
+    $('#pl-stop-timer',host)?.addEventListener('click',()=>{
+      const t=read().timer;
+      if(!t)return;
+      const saved=update(d=>{
+        if(d.timer?.id!==t.id)return;
+        const session=d.timer;
+        const ms=elapsed(session);
+        if(ms>0){
+          d.studyTime??={};
+          const day=d.studyTime[session.date]??={};
+          day[session.course]=(day[session.course]||0)+ms;
+        }
+        delete d.timer;
+      });
+      if(saved){refresh();notice('공부 시간을 저장했습니다.');}
+    });
+  }
   function calendar(){
     const first=Core.parse(month+'-01'), offset=first.getUTCDay(), start=Core.add(month+'-01',-offset);
     const end=new Date(first);end.setUTCMonth(end.getUTCMonth()+1);end.setUTCDate(0);
     const data=read(), due=deadlines(), cells=Array.from({length:Math.ceil((offset+end.getUTCDate())/7)*7},(_,n)=>{
       const date=Core.add(start,n), outside=date.slice(0,7)!==month, day=data.days?.[date];
-      const hasPlan=Object.values(day||{}).some(e=>e.tasks?.length||e.note||e.rest)||courses.some(c=>window.RecallPractice?.summary(c.id,'final',date)?.attempts>0);
+      const hasPlan=Object.values(day||{}).some(e=>e.tasks?.length||e.note||e.rest)||totalTime(data,date)>0||courses.some(c=>window.RecallPractice?.summary(c.id,'final',date)?.attempts>0);
       const isDue=due.some(a=>a.due.startsWith(date+'T'));const isExam=courses.some(c=>examDays(c.id).includes(date));
       return `<button type="button" data-pl-day="${date}" class="${outside?'pl-outside ':''}${date===selected?'pl-selected ':''}${date===Core.today()?'pl-today ':''}${isExam?'pl-exam-day ':''}${isDue?'pl-due-day':''}" aria-label="${fmt(date)}${hasPlan?' · 기록 있음':''}${isExam?' · 기말고사':''}${isDue?' · 과제 마감':''}" ${date===selected?'aria-current="date"':''}><span>${Number(date.slice(-2))}</span>${hasPlan||data.records?.[date]?'<i aria-hidden="true"></i>':''}</button>`;
     }).join('');
@@ -46,11 +112,11 @@
     return window.RecallPractice?.summary?.(cid,'final',date)||null;
   }
   function subject(c,data){
-    const e=entry(data,c.id), tasks=e.tasks||[], f=flash(c.id), automatic=!!(f&&(f.due>0||f.fresh>0||f.attempts>0));
+    const e=entry(data,c.id), tasks=e.tasks||[], study=dayTime(data)[c.id], f=flash(c.id), automatic=!!(f&&(f.due>0||f.fresh>0||f.attempts>0));
     const autoDone=automatic&&f.attempts>0&&(!f.remaining||!f.selected);
     const complete=tasks.length+Number(automatic)>0&&tasks.every(t=>t.done)&&(!automatic||autoDone);
     const status=e.rest?'오늘은 쉬기':complete?'완료':tasks.length||automatic?'학습 진행':'계획 없음';
-    return `<section class="pl-subject ${e.rest?'pl-rest':''}" data-pl-course="${esc(c.id)}" aria-labelledby="pl-heading-${esc(c.id)}"><div class="pl-subject-head"><div class="pl-name-status"><h2 id="pl-heading-${esc(c.id)}"><a href="#/course/${encodeURIComponent(c.id)}/home">${esc(c.name)}</a></h2><button type="button" class="pl-status ${status==='계획 없음'?'pl-neutral':''}" data-pl-rest="${esc(c.id)}" aria-label="${esc(c.name)} ${e.rest?'공부하기로 변경':'오늘 쉬기'}" aria-pressed="${!!e.rest}">${status}</button></div><div class="pl-subject-actions"><button type="button" class="pl-add-toggle" data-pl-add-toggle="${esc(c.id)}" aria-label="${esc(c.name)} 할 일 입력" aria-expanded="${!tasks.length&&!automatic}">＋</button><button type="button" class="pl-note-button" data-pl-note="${esc(c.id)}" aria-expanded="${!!e.note}">${icon('note')}메모</button></div></div>${examDays(c.id).includes(selected)?`<p class="pl-exam-note">기말고사 · ${examDate(c.id)?fmt(examDate(c.id)):'12.15–12.21'}</p>`:''}<div class="pl-task-list">${tasks.map(t=>`<div class="pl-task ${t.done?'pl-done':''}"><label><input type="checkbox" data-pl-check="${esc(t.id)}" ${t.done?'checked':''}><span>${esc(t.text)}${t.assignment?` <a class="pl-task-origin" href="${window.StudyAssignments.href(c.id,t.assignment.id)}">${esc(t.assignment.title)}</a>`:''}</span></label><button type="button" class="pl-task-edit" data-pl-edit-task="${esc(t.id)}" aria-label="${esc(t.text)} 수정">수정</button><button type="button" data-pl-remove="${esc(t.id)}" aria-label="${esc(t.text)} 삭제">×</button></div>`).join('')}${automatic?`<div class="pl-task pl-auto ${autoDone?'pl-done':''}"><span class="pl-auto-check" aria-hidden="true">${autoDone?'✓':''}</span><button type="button" data-pl-flash="${esc(c.id)}">플래시카드 15분${f.attempts?` · ${f.attempts}장 학습`:''}</button><small>복습 ${f.due} · 새 카드 ${f.fresh}</small></div>`:''}</div><form class="pl-add-task" data-pl-add="${esc(c.id)}" ${tasks.length||automatic?'hidden':''}><label class="sr-only" for="pl-new-${esc(c.id)}">${esc(c.name)} 할 일</label><input id="pl-new-${esc(c.id)}" name="task" maxlength="240" placeholder="${e.rest?'필요한 할 일만 적어 두세요.':'＋ 할 일 추가'}" autocomplete="off"><button type="submit" aria-label="${esc(c.name)} 할 일 추가">추가</button></form><div class="pl-note" ${e.note?'':'hidden'}><label class="sr-only" for="pl-note-${esc(c.id)}">${esc(c.name)} 메모</label><textarea id="pl-note-${esc(c.id)}" data-pl-memo="${esc(c.id)}" rows="2" maxlength="4000" placeholder="메모를 작성하세요.">${esc(e.note||'')}</textarea></div></section>`;
+    return `<section class="pl-subject ${e.rest?'pl-rest':''}" data-pl-course="${esc(c.id)}" aria-labelledby="pl-heading-${esc(c.id)}"><div class="pl-subject-head"><div class="pl-name-status"><h2 id="pl-heading-${esc(c.id)}"><a href="#/course/${encodeURIComponent(c.id)}/home">${esc(c.name)}</a></h2><button type="button" class="pl-status ${status==='계획 없음'?'pl-neutral':''}" data-pl-rest="${esc(c.id)}" aria-label="${esc(c.name)} ${e.rest?'공부하기로 변경':'오늘 쉬기'}" aria-pressed="${!!e.rest}">${status}</button></div><div class="pl-subject-actions">${study?`<span class="pl-study-time">${timeLabel(study)}</span>`:'' }<button type="button" class="pl-add-toggle" data-pl-add-toggle="${esc(c.id)}" aria-label="${esc(c.name)} 할 일 입력" aria-expanded="${!tasks.length&&!automatic}">＋</button><button type="button" class="pl-note-button" data-pl-note="${esc(c.id)}" aria-expanded="${!!e.note}">${icon('note')}메모</button></div></div>${examDays(c.id).includes(selected)?`<p class="pl-exam-note">기말고사 · ${examDate(c.id)?fmt(examDate(c.id)):'12.15–12.21'}</p>`:''}<div class="pl-task-list">${tasks.map(t=>`<div class="pl-task ${t.done?'pl-done':''}"><label><input type="checkbox" data-pl-check="${esc(t.id)}" ${t.done?'checked':''}><span>${esc(t.text)}${t.assignment?` <a class="pl-task-origin" href="${window.StudyAssignments.href(c.id,t.assignment.id)}">${esc(t.assignment.title)}</a>`:''}</span></label><button type="button" class="pl-task-edit" data-pl-edit-task="${esc(t.id)}" aria-label="${esc(t.text)} 수정">수정</button><button type="button" data-pl-remove="${esc(t.id)}" aria-label="${esc(t.text)} 삭제">×</button></div>`).join('')}${automatic?`<div class="pl-task pl-auto ${autoDone?'pl-done':''}"><span class="pl-auto-check" aria-hidden="true">${autoDone?'✓':''}</span><button type="button" data-pl-flash="${esc(c.id)}">플래시카드 15분${f.attempts?` · ${f.attempts}장 학습`:''}</button><small>복습 ${f.due} · 새 카드 ${f.fresh}</small></div>`:''}</div><form class="pl-add-task" data-pl-add="${esc(c.id)}" ${tasks.length||automatic?'hidden':''}><label class="sr-only" for="pl-new-${esc(c.id)}">${esc(c.name)} 할 일</label><input id="pl-new-${esc(c.id)}" name="task" maxlength="240" placeholder="${e.rest?'필요한 할 일만 적어 두세요.':'＋ 할 일 추가'}" autocomplete="off"><button type="submit" aria-label="${esc(c.name)} 할 일 추가">추가</button></form><div class="pl-note" ${e.note?'':'hidden'}><label class="sr-only" for="pl-note-${esc(c.id)}">${esc(c.name)} 메모</label><textarea id="pl-note-${esc(c.id)}" data-pl-memo="${esc(c.id)}" rows="2" maxlength="4000" placeholder="메모를 작성하세요.">${esc(e.note||'')}</textarea></div></section>`;
   }
   function totals(data,record){
     let total=0,done=0;
@@ -59,17 +125,17 @@
   }
   function recordView(data,record,t){
     const rows=courses.map(c=>{
-      const e=entry(data,c.id), tasks=e.tasks||[], f=record.flash[c.id];
-      return `<section class="pl-record-row"><h2>${esc(c.name)}</h2><div>
+      const e=entry(data,c.id), tasks=e.tasks||[], f=record.flash[c.id], study=dayTime(data)[c.id];
+      return `<section class="pl-record-row"><h2>${esc(c.name)}${study?`<small class="pl-study-time">${timeLabel(study)}</small>`:''}</h2><div>
         ${tasks.length||f?`<ul>${tasks.map(task=>`<li><span class="pl-record-mark" aria-label="${task.done?'완료':'미완료'}">${task.done?'✓':'○'}</span><span>${esc(task.text)}${task.assignment?` <a class="pl-task-origin" href="${window.StudyAssignments.href(c.id,task.assignment.id)}">${esc(task.assignment.title)}</a>`:''}</span></li>`).join('')}
         ${f?`<li><span class="pl-record-mark" aria-label="${f.done?'완료':'미완료'}">${f.done?'✓':'○'}</span><span>플래시카드 15분${f.attempts?` · ${f.attempts}장 학습`:''}</span></li>`:''}</ul>`:''}
-        ${e.rest||(!tasks.length&&!f&&!e.note)?`<p class="pl-record-empty">${e.rest?'오늘은 쉬기':'기록 없음'}</p>`:''}
+        ${e.rest||(!tasks.length&&!f&&!e.note&&!study)?`<p class="pl-record-empty">${e.rest?'오늘은 쉬기':'기록 없음'}</p>`:''}
         ${e.note?`<p class="pl-record-note">${esc(e.note)}</p>`:''}</div></section>`;
     }).join('');
     const upcoming=deadlines().filter(a=>!a.submitted&&a.due.slice(0,10)>=selected).slice(0,3);
     const day=Core.parse(selected);
     return `<article class="pl-record"><div class="pl-record-heading"><h2 tabindex="-1">하루 공부 기록</h2><button type="button" id="pl-edit-record">다시 편집</button></div>
-      <div class="pl-record-date"><time datetime="${selected}">${selected.slice(5).replace('-','.')}</time><span>${day.toLocaleDateString('ko-KR',{weekday:'long',timeZone:'UTC'})}</span><strong>${t.done}/${t.total} 완료</strong></div>
+      <div class="pl-record-date"><time datetime="${selected}">${selected.slice(5).replace('-','.')}</time><span>${day.toLocaleDateString('ko-KR',{weekday:'long',timeZone:'UTC'})}</span><strong>${t.done}/${t.total} 완료${totalTime(data)?` · 공부 ${timeLabel(totalTime(data))}`:''}</strong></div>
       ${rows}${upcoming.length?`<div class="pl-deadlines"><strong>다가오는 마감</strong>${deadlineLinks(upcoming)}</div>`:''}
     </article>`;
   }
@@ -100,12 +166,13 @@
     document.body.classList.add('planner-view');document.body.classList.remove('reading-wide');
     document.title=`${fmt(selected,{month:'numeric',day:'numeric'})} · 스터디 플래너 | 학습 서재`;
     const data=read(),record=data.records?.[selected],t=totals(data,record),w=Core.week(selected),due=deadlines().filter(a=>a.due.startsWith(selected+'T'));
-    host.innerHTML=`<aside class="pl-sidebar"><a class="pl-brand" href="#/library/2/2">학습 서재</a><nav aria-label="플래너 메뉴"><a href="#/library/2/2">${icon('home')}내 서재</a><a href="#/planner/${selected}" class="pl-nav-selected" aria-current="page">${icon('calendar')}스터디 플래너</a><button type="button" id="pl-calendar-toggle" aria-expanded="${calendarOpen}">${icon('calendar')}캘린더</button><button type="button" id="pl-cards">${icon('cards')}플래시카드</button></nav><div class="pl-calendar ${calendarOpen?'pl-calendar-open':''}" id="pl-calendar">${calendar()}</div></aside><main class="pl-main" id="s-content" tabindex="-1"><header class="pl-header"><h1 tabindex="-1">스터디 플래너</h1><div class="pl-date"><button type="button" data-pl-shift="-1" aria-label="전날">${icon('left')}</button><label class="pl-date-label">${icon('calendar')}<span>${fmt(selected)}</span><input type="date" id="pl-date-input" aria-label="계획 날짜" value="${selected}" min="2000-01-01" max="2100-12-31"></label><button type="button" data-pl-shift="1" aria-label="다음 날">${icon('right')}</button></div>${w?`<span class="pl-week">${w}주차</span>`:''}<button type="button" class="pl-exam" id="pl-exam">${icon('exam')}기말고사 12.15–12.21</button></header>${record?recordView(data,record,t):`${due.length?`<div class="pl-deadlines"><strong>과제 마감</strong>${deadlineLinks(due)}</div>`:''}<div class="pl-subjects">${courses.map(c=>subject(c,data)).join('')}</div><footer class="pl-footer"><span id="pl-total">완료 ${t.done} / ${t.total}</span><span id="pl-save-status" role="status" aria-live="polite"></span><button type="button" id="pl-finish" class="pl-primary">완료</button></footer>`}</main>`;
+    host.innerHTML=`<aside class="pl-sidebar"><a class="pl-brand" href="#/library/2/2">학습 서재</a><nav aria-label="플래너 메뉴"><a href="#/library/2/2">${icon('home')}내 서재</a><a href="#/planner/${selected}" class="pl-nav-selected" aria-current="page">${icon('calendar')}스터디 플래너</a><button type="button" id="pl-calendar-toggle" aria-expanded="${calendarOpen}">${icon('calendar')}캘린더</button><button type="button" id="pl-cards">${icon('cards')}플래시카드</button></nav><div class="pl-calendar ${calendarOpen?'pl-calendar-open':''}" id="pl-calendar">${calendar()}</div></aside><main class="pl-main" id="s-content" tabindex="-1"><header class="pl-header"><h1 tabindex="-1">스터디 플래너</h1><div class="pl-date"><button type="button" data-pl-shift="-1" aria-label="전날">${icon('left')}</button><label class="pl-date-label">${icon('calendar')}<span>${fmt(selected)}</span><input type="date" id="pl-date-input" aria-label="계획 날짜" value="${selected}" min="2000-01-01" max="2100-12-31"></label><button type="button" data-pl-shift="1" aria-label="다음 날">${icon('right')}</button></div>${w?`<span class="pl-week">${w}주차</span>`:''}<button type="button" class="pl-exam" id="pl-exam">${icon('exam')}기말고사 12.15–12.21</button></header>${timerPanel(data)}${record?recordView(data,record,t):`${due.length?`<div class="pl-deadlines"><strong>과제 마감</strong>${deadlineLinks(due)}</div>`:''}<div class="pl-subjects">${courses.map(c=>subject(c,data)).join('')}</div><footer class="pl-footer"><span id="pl-total">완료 ${t.done} / ${t.total}${totalTime(data)?` · 공부 ${timeLabel(totalTime(data))}`:''}</span><span id="pl-save-status" role="status" aria-live="polite"></span><button type="button" id="pl-finish" class="pl-primary">완료</button></footer>`}</main>`;
     bind();
   }
   function refresh(){if(host?.isConnected&&document.body.classList.contains('planner-view'))render(host);}
   function navigate(date){selected=date;month=date.slice(0,7);location.hash=`#/planner/${date}`;}
   function bind(){
+    bindTimer();
     $('#pl-date-input',host).onchange=ev=>{if(Core.parse(ev.target.value))navigate(ev.target.value);};
     $$('[data-pl-day]',host).forEach(b=>b.onclick=()=>navigate(b.dataset.plDay));
     $$('[data-pl-shift]',host).forEach(b=>b.onclick=()=>navigate(Core.add(selected,Number(b.dataset.plShift))));
@@ -161,11 +228,25 @@
   function bindLearned(root,cid,onSaved){const form=$('#pl-learned-form',root);if(!form)return;form.onsubmit=ev=>{ev.preventDefault();const values={};try{for(const input of $$('[data-learned]',form)){Core.range(input.value,Number(input.dataset.max));values[input.dataset.learned]=input.value.trim();}}catch(e){$('#pl-learned-message',form).textContent=e.message;return;}if(update(d=>d.learned[cid]=values)){onSaved();notice('배운 범위를 저장했습니다.');}};}
   function enhancements(){
     for(const side of $$('.s-side'))if(!$('.pl-entry',side)){const a=document.createElement('a');a.className='s-home-link pl-entry';a.href='#/planner/'+Core.today();a.innerHTML=icon('calendar')+'스터디 플래너';$('.s-home-link',side)?.after(a);}
-    for(const bar of $$('.cv-bar'))if(!$('[data-open-planner]',bar)){const a=document.createElement('a');a.className='s-btn';a.dataset.openPlanner='';a.href='#/planner/'+Core.today();a.textContent='플래너';bar.append(a);}
+    const timer=read().timer;
+    for(const bar of $$('.cv-bar')){
+      let a=$('[data-open-planner]',bar);
+      if(!a){a=document.createElement('a');a.className='s-btn';a.dataset.openPlanner='';bar.append(a);}
+      const text=timer?(timer.startedAt?'공부 타이머 · 측정 중':'공부 타이머 · 일시정지'):'플래너';
+      if(a.textContent!==text)a.textContent=text;
+      a.setAttribute('href','#/planner/'+(timer?.date||Core.today()));
+    }
   }
   let pending;new MutationObserver(()=>{cancelAnimationFrame(pending);pending=requestAnimationFrame(enhancements);}).observe(document.body,{childList:true,subtree:true});
-  window.addEventListener('storage',ev=>{if(ev.key===KEY)refresh();});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
+  window.addEventListener('storage',ev=>{if(ev.key===KEY){refresh();enhancements();}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseTimer();else{refresh();enhancements();}});
+  window.addEventListener('pagehide',pauseTimer);
+  setInterval(()=>{
+    const clock=$('#pl-clock');
+    if(!clock)return;
+    const timer=read().timer;
+    if(timer)clock.textContent=clockLabel(elapsed(timer));
+  },1000);
   document.addEventListener('close',ev=>{if(ev.target.id==='st-tools')refresh();},true);
   function addAssignment(cid,date,a,task){
     return update(d=>{

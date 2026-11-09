@@ -55,10 +55,22 @@
 .as-tasks .s-actions{margin:8px 0 0}
 .as-detail>details{margin-top:20px}
 .as-detail>details summary{cursor:pointer}
+.pl-timer{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin:0 0 22px;padding:12px 16px;border:1px solid var(--pl-line);border-radius:7px;background:#f7f9fb;color:#172c4a}
+.pl-timer label{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;font-weight:650}
+.pl-timer select{font:inherit;max-width:100%;padding:5px 8px;border:1px solid #c9d6e0;border-radius:5px;background:#fff;color:#172c4a}
+.pl-timer small{display:block;color:#586676;font-size:13px}
+.pl-clock{font-size:26px;font-variant-numeric:tabular-nums;font-weight:750;letter-spacing:.03em}
+.pl-timer-actions{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.pl-timer button{margin:0;border:1px solid #c9d6e0;border-radius:5px;padding:5px 10px;background:#fff;color:#172c4a}
+.pl-timer button.pl-primary{background:#172c4a;color:#fff;border-color:#172c4a}
+.pl-study-time{font-weight:650;font-size:14px;color:#254d6e;white-space:nowrap}
+.pl-record-row h2>.pl-study-time{display:block;margin-top:4px}
 @media(max-width:650px){
   .pl-record-row{grid-template-columns:minmax(0,1fr)}
   .pl-record-row h2{padding:12px 0 3px}
   .pl-record-row>div{border:0;padding:3px 0 12px}
   .pl-record-heading button{font-size:14px!important}
   .pl-record-date strong{font-size:14px}
+  .pl-timer-actions{margin-left:0}
+  .pl-subject-actions{flex-wrap:wrap;justify-content:flex-end}
 }
