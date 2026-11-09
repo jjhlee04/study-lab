@@ -20,6 +20,19 @@ const isW09File=m=>m.course==='unix'&&!m.builtin&&m.pages===48&&m.filename===w09
 const w09Local=state.materials.find(isW09File);
 if(!state.materials.some(m=>m.id===w09.id)&&!w09Local){state.materials.push(structuredClone(w09));const unix=state.courses.find(c=>c.id==='unix');unix.exam??={};unix.exam.final??={};unix.exam.final[w09.id]='전체';}
 for(const ch of window.COURSE_CHAPTERS){const cid=ch.course||'programming-languages';if(!state.courses.some(c=>c.id===cid)){const seed=seedCourses.find(c=>c.id===cid);if(seed)state.courses.push(structuredClone(seed));}if(!state.materials.some(m=>m.id===ch.id)){state.materials.push({id:ch.id,course:cid,title:ch.title,pages:ch.pages.length,filename:ch.url.split('/').pop(),builtin:true,url:ch.url,chapter:ch.id,week:ch.title,archived:false});const tc=state.courses.find(c=>c.id===cid);if(tc&&ch.finalRange){tc.exam??={mid:{},final:{}};tc.exam.final??={};if(!(ch.id in tc.exam.final))tc.exam.final[ch.id]=ch.finalRange;}}}
+const pl09 = window.COURSE_CHAPTERS.find(ch => ch.id === 'pl09');
+const pl09Course = 'programming-languages';
+const isPL09Source = m => pl09 && m.course === pl09Course && !m.builtin
+  && [pl09.url, 'PL_09_types_ko.pdf'].includes(m.filename);
+const plCourse = state.courses.find(c => c.id === pl09Course);
+if (plCourse && pl09) {
+  for (const scope of Object.values(plCourse.exam || {})) {
+    const previous = state.materials.filter(m => isPL09Source(m) && Object.hasOwn(scope, m.id));
+    if (!previous.length) continue;
+    scope[pl09.id] = scope[previous[0].id];
+    for (const source of previous) delete scope[source.id];
+  }
+}
 const builtCourse=id=>id==='programming-languages'||(window.COURSE_CHAPTERS||[]).some(ch=>ch.course===id);
 const examViews={};
 const tabs=[['home','과목 홈'],['materials','강의자료'],['textbook','학습 교재'],['exams','시험 준비'],['review','오답 복습'],['questions','확인할 내용']];
@@ -73,16 +86,3 @@ window.StudyLibrary={openChapterSource(chapter,page){
   notify('강의자료에서 '+chapter.url+' 원문을 등록해 주세요.');
 },openW09(page){const file=state.materials.find(m=>m.course==='unix'&&!m.builtin&&!m.archived&&m.filename===w09.filename);if(file)return preview(file,page);go(url('unix','materials'));notify('강의자료에서 9주차 원본 PDF를 등록해 주세요.');},courses:()=>structuredClone(state.courses),rangePages,navigation(id){const c=course(id);return c?{course:{id:c.id,name:c.name,grade:c.grade,semester:c.semester},links:tabs.map(([key,label])=>({key,label,href:url(id,key)})),courses:state.courses.map(x=>({id:x.id,name:x.name,href:url(x.id)}))}:null;},scope(id,type){const c=course(id);if(!c)return null;const info=examInfo(c,type),out={};for(const m of info.selected){let p=null;try{p=rangePages(info.scope[m.id],m.pages);}catch{}out[isW09File(m)?w09.id:m.id]=p;}return out;}};
 })();
-const pl09 = window.COURSE_CHAPTERS.find(ch => ch.id === 'pl09');
-const pl09Course = 'programming-languages';
-const isPL09Source = m => pl09 && m.course === pl09Course && !m.builtin
-  && [pl09.url, 'PL_09_types_ko.pdf'].includes(m.filename);
-const plCourse = state.courses.find(c => c.id === pl09Course);
-if (plCourse && pl09) {
-  for (const scope of Object.values(plCourse.exam || {})) {
-    const previous = state.materials.filter(m => isPL09Source(m) && Object.hasOwn(scope, m.id));
-    if (!previous.length) continue;
-    scope[pl09.id] = scope[previous[0].id];
-    for (const source of previous) delete scope[source.id];
-  }
-}
