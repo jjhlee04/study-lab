@@ -20,3 +20,45 @@
 .pl-exam-note{margin:6px 0 12px;color:#087f84;font-size:16px;border-left:3px solid #43aaa3;padding:6px 12px;background:#f0f8f7}
 .pl-header h1{color:var(--pl-ink)}.pl-subject-actions{display:flex;align-items:center;gap:14px;flex-shrink:0}.pl-add-toggle{background:transparent;border:0;color:#667e8b;padding:1px;min-width:24px;min-height:28px;font-size:21px!important}.pl-add-task[hidden]{display:none}
 @media(max-width:650px){.pl-subject-actions{gap:7px}.pl-add-toggle{font-size:18px!important;min-width:20px}.pl-subject-head{gap:8px}.pl-name-status{flex:1}}
+
+.pl-footer{align-items:center}
+.pl-footer #pl-finish{margin:0 0 0 auto;padding:9px 24px;background:#172c4a;color:#fff;text-decoration:none}
+.pl-task-edit{border:0;background:none;color:#546477;padding:4px;font-size:14px!important;flex-shrink:0}
+.pl-task-origin{display:inline-block;color:#254d6e;font-size:.76em;margin-left:.4em;text-decoration:underline;text-underline-offset:.18em}
+.pl-done label a{text-decoration:underline}
+.pl-cal-grid button.pl-due-day:not(.pl-selected){box-shadow:inset 0 -2px #a16926}
+.pl-deadlines{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px;border-block:1px solid #c8c2b5;padding:10px 0;margin:0 0 20px;font-size:15px}
+.pl-deadlines strong{background:#172c4a;color:#fff;padding:4px 9px}
+.pl-deadlines a{color:#243c58;text-decoration:underline;text-underline-offset:.2em;overflow-wrap:anywhere}
+.pl-record{--paper:#faf7ef;--ink:#1b2739;--rule:#c8c2b5;max-width:1020px;margin-inline:auto;padding:clamp(18px,4vw,52px);border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:6px;box-shadow:0 5px 18px #18263c0d}
+.pl-record-heading,.pl-record-date{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:14px}
+.pl-record-heading h2{font-size:clamp(25px,4vw,42px);margin:0;letter-spacing:-.045em}
+.pl-record-heading button{border:0;background:transparent;color:inherit;white-space:nowrap;padding:4px;text-decoration:underline;text-underline-offset:.23em}
+.pl-record-date{justify-content:flex-start;align-items:center;padding:12px 0;flex-wrap:wrap}
+.pl-record-date time{font-size:clamp(44px,7vw,84px);font-family:Georgia,serif;font-variant-numeric:lining-nums;line-height:1}
+.pl-record-date strong{margin-left:auto;font-size:16px}
+.pl-record-row{display:grid;grid-template-columns:minmax(145px,27%) minmax(0,1fr);border-bottom:1px solid var(--rule)}
+.pl-record-row h2{font-size:clamp(17px,2vw,23px);letter-spacing:-.035em;margin:0;padding:16px 13px 16px 0;overflow-wrap:anywhere}
+.pl-record-row>div{padding:16px 0 16px 18px;border-left:1px solid var(--rule);overflow-wrap:anywhere}
+.pl-record-row ul{margin:0;padding:0;list-style:none;display:grid;gap:5px}
+.pl-record-row li{display:flex;gap:9px;align-items:baseline}
+.pl-record-mark{width:1em;flex-shrink:0;font-weight:700;color:#274c70}
+.pl-record-empty,.pl-record-note{font-size:15px;color:#58606b;margin:0}
+.pl-record-note{white-space:pre-wrap}
+.pl-record-row ul+.pl-record-note,.pl-record-row p+.pl-record-note{border-top:1px solid var(--rule);margin-top:9px;padding-top:8px}
+.pl-record .pl-deadlines{margin:24px 0 0;border:0;padding:0}
+.as-text{white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0}
+.as-date input{font:inherit;max-width:100%;padding:5px 8px}
+.as-tasks{padding:0;list-style:none}
+.as-tasks li{border-bottom:1px solid #d2dbe3;padding:12px 0}
+.as-tasks small{display:block;margin:.25em 0 .25em 1.5em;color:inherit}
+.as-tasks .s-actions{margin:8px 0 0}
+.as-detail>details{margin-top:20px}
+.as-detail>details summary{cursor:pointer}
+@media(max-width:650px){
+  .pl-record-row{grid-template-columns:minmax(0,1fr)}
+  .pl-record-row h2{padding:12px 0 3px}
+  .pl-record-row>div{border:0;padding:3px 0 12px}
+  .pl-record-heading button{font-size:14px!important}
+  .pl-record-date strong{font-size:14px}
+}
