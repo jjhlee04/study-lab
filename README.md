@@ -224,3 +224,14 @@ Page-level Explanation / Source / Quiz links appear beside the page title and at
 - `course-study.js`: 한 쪽에 여러 퀴즈(`page.quizzes`)를 지원합니다. 답은 `quizAnswers['v2:번호']`에 저장되며, 이전 PL 09 단일 퀴즈의 `answer` 기록은 문제가 바뀌어 채점에 쓰지 않습니다(학습 완료 표시는 유지). 다른 과목은 기존 단일 퀴즈 방식 그대로입니다.
 - `exam.js`: 추가 퀴즈를 `pl-mc-pl09-쪽-q2/-q3` id로 모의고사 문항 은행과 오답 노트에 포함합니다.
 - 예제의 Java·C·C++ 결과와 오류 문구는 javac/gcc/g++로 직접 확인했습니다(Ada·ML 출력은 구현마다 형식이 다를 수 있다고 표시).
+
+## Anki 방식 카드 복습 (FSRS, 2026-11-10)
+
+- 일정: Anki와 같은 FSRS 알고리즘. `dist/vendor/ts-fsrs-5.4.2.umd.js`(MIT, 라이선스 `dist/vendor/ts-fsrs-LICENSE.txt`)를 버전 고정해 포함합니다. Anki(AGPL) 코드는 사용하지 않고 공개 매뉴얼의 동작만 따릅니다.
+- 풀이: 답을 직접 입력해 채점한 뒤 다시·어려움·보통·쉬움(키보드 1~4)으로 평가합니다. 틀리면 다시, 맞히면 보통이 미리 선택되고, 버튼마다 다음 복습 시점을 보여 줍니다. 미리 본 결과를 그대로 적용합니다.
+- 학습 단계: 새 카드 1분·10분, 틀린 복습 카드 10분. 남은 카드가 없으면 20분 안에 돌아올 학습 카드를 먼저 보여 줍니다(learn-ahead). 목표 기억률 기본 90%(80~95%).
+- 덱: 과목 → 챕터(교재). 하루 한도 기본 새 카드 10·복습 100(과목별), 챕터별 새 카드 한도를 따로 둘 수 있습니다. 15분은 목표 시간 표시이며 넘겨도 계속할 수 있습니다.
+- 통계: 새·학습 중·복습·어려운 카드 수, 최근 30일 실제 기억률(복습 단계 평가 기준), 15주 히트맵, 30일 복습 예정, 자주 틀리는 카드(‘다시’ 8회 이상은 어려운 카드).
+- 기존 기록: `study-recall-v1`을 그대로 쓰며, 고정 간격 기록은 다음 복습일을 유지한 채 FSRS 복습 카드로 이어 갑니다(원래 값은 record.legacy에 보존). 백업·기기 동기화 대상은 그대로입니다. 개인 매개변수 최적화는 아직 하지 않고 기본 매개변수를 씁니다.
+- 카드: PL 09 데이터 타입 94장 추가(`authoring/programming-languages/pl09_cards.py` → `dist/recall-cards-pl09.js`). 배운 범위에 포함된 쪽의 카드만 새 카드로 나옵니다.
+- 검증: `node --test tests/recall-fsrs.test.cjs tests/planner-core.test.cjs` (ts-fsrs와 같은 결과, 학습 단계, 기존 기록 이전, 한도·순서, learn-ahead, 목표 기억률).
