@@ -1,3 +1,38 @@
 .cs-reader{max-width:1350px}.cs-toolbar{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:20px 0}.cs-toolbar label{display:block;font-size:15px;color:#506078}.cs-reader select,.cs-reader input:not([type=radio]):not([type=checkbox]),.cs-reader textarea{font:inherit;width:100%;border:1px solid #bdccd8;border-radius:6px;background:#fff;padding:10px;color:#10233b}.cs-toolbar select{max-width:400px}.cs-layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:32px;border-top:1px solid #dae4eb;padding-top:24px}.cs-toc{min-width:0}.cs-toc>label{display:block;margin-bottom:14px;font-size:15px}.cs-toc nav{max-height:70vh;overflow:auto;position:sticky;top:20px}.cs-toc nav a{display:grid;grid-template-columns:25px 1fr 15px;gap:7px;padding:12px 8px;border-bottom:1px solid #e3eaf0;color:#334761;font-size:14px;line-height:1.5}.cs-toc nav a[hidden]{display:none}.cs-toc nav a[aria-current]{background:#e6f5f4;color:#006b70;font-weight:700;border-left:3px solid #087f84}.cs-lesson{min-width:0;max-width:900px}.cs-pageheading{display:flex;justify-content:space-between;align-items:start;gap:15px}.cs-pageheading h2{font-size:30px;line-height:1.4;margin:14px 0 26px;overflow-wrap:anywhere}.cs-pageheading button{flex-shrink:0}.cs-explain{border-left:4px solid #087f84;background:#f0f8f8;padding:20px 24px;margin-bottom:25px}.cs-explain h3{margin-top:0;font-size:20px}.cs-explain p{font-size:20px;line-height:1.95;white-space:pre-wrap;overflow-wrap:anywhere}.cs-explain small{font-size:14px;color:#526779}.cs-source{margin:30px 0}.cs-source summary,.cs-organizer>summary{font-size:18px;font-weight:700;cursor:pointer;padding:12px 0}.cs-source img{width:100%;height:auto;border:1px solid #d5e0e8;border-radius:6px}.cs-reader pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f3f6f9;padding:20px;font-size:16px;line-height:1.8}.cs-quiz,.cs-lab{padding:22px;border:1px solid #d5e1e9;border-radius:8px;margin:22px 0}.cs-quiz fieldset{border:0;padding:0;margin:0 0 20px}.cs-quiz legend{font-size:20px;font-weight:600;margin-bottom:16px}.cs-quiz label{display:block;padding:12px;border:1px solid #dae4eb;border-radius:6px;margin:8px 0}.cs-result{font-weight:700;color:#006b70}.cs-lab>label,.cs-note,.cs-organizer label{display:block;margin:15px 0}.cs-note textarea{display:block;margin-top:8px}.cs-organizer{border-top:1px solid #dae4eb;margin-top:30px}.cs-organizer form{background:#f7fafc;padding:20px}.cs-source iframe{width:100%;height:600px;border:1px solid #ccd8e3}.cs-reader a:focus-visible,.cs-reader button:focus-visible{outline:3px solid #23a9ac;outline-offset:3px}@media(max-width:1000px){.cs-layout{grid-template-columns:1fr}.cs-toc nav{max-height:220px;position:static;border:1px solid #d5e0e8}.cs-pageheading{flex-direction:column}.cs-pageheading h2{font-size:26px;margin-bottom:12px}.cs-explain{padding:18px}.cs-explain p{font-size:19px}.cs-toc nav a{font-size:16px}.cs-toolbar>label:first-child{width:100%}.cs-toolbar select{max-width:100%}.cs-source iframe{height:65vh}.cs-quiz,.cs-lab{padding:16px}}
 .cs-toc-toggle{display:none}.cs-toc[open]>summary{display:none}
 @media(max-width:1000px){.cs-toc-toggle,.cs-toc[open]>summary{display:block;font-size:17px;font-weight:600;padding:12px;background:#edf6f7;border-radius:6px;cursor:pointer}}
+/* 상세 교재(핵심 개념·비유·예제·단계별 풀이) */
+.cs-rich section{margin:0 0 26px}
+.cs-rich h3{font-size:21px;margin:0 0 12px}
+.cs-rich .cs-text p,.cs-rich li{font-size:18px;line-height:1.9;margin:0 0 8px;overflow-wrap:anywhere;word-break:keep-all}
+.cs-rich ul,.cs-rich ol{padding-left:26px;margin:0}
+.cs-rich li{margin:0 0 10px;padding-left:4px}
+.cs-core{border:1px solid #cfe3e4;border-radius:8px;padding:18px 20px;background:#fbfefe}
+.cs-core li::marker{color:#087f84}
+.cs-analogy{border-left:4px solid #7a6bd1;background:#f6f4ff;padding:16px 20px}
+.cs-ex{margin:0 0 18px;border:1px solid #d9e3ec;border-radius:8px;overflow:hidden;background:#fff}
+.cs-ex figcaption{font-weight:700;font-size:17px;padding:12px 16px;background:#f3f7fa;border-bottom:1px solid #e1e8ee}
+.cs-label{display:inline-block;font:700 13px/1.4 system-ui,sans-serif;letter-spacing:.02em;padding:3px 10px;border-radius:999px;margin:12px 0 0 14px}
+.cs-code{background:#13213a}
+.cs-code .cs-label{background:#2c3e5c;color:#d8e6f7}
+.cs-reader .cs-code pre{background:transparent;color:#eef4fb;margin:0;padding:12px 18px 16px;font:16px/1.75 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;overflow-x:auto;overflow-wrap:normal}
+.cs-out{background:#f1faf4;border-top:3px solid #2f9e64}
+.cs-out .cs-label{background:#d6f0e0;color:#14593a}
+.cs-reader .cs-out pre{background:transparent;color:#173a28;margin:0;padding:10px 18px 14px;font:16px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap}
+.cs-out.is-error{background:#fff4f2;border-top-color:#c4473a}
+.cs-out.is-error .cs-label{background:#f9dcd7;color:#8c2a1f}
+.cs-reader .cs-out.is-error pre{color:#5c1b13}
+.cs-ex-note{padding:12px 16px;border-top:1px solid #e6edf2;background:#fcfdfe}
+.cs-ex-note p{font-size:17px!important;line-height:1.8;margin:0 0 6px}
+.cs-steps ol li::marker{font-weight:700;color:#087f84}
+.cs-rich .cs-trap ul{padding-left:22px}
+.cs-quiz h3 small{font-size:15px;font-weight:600;color:#5b6a80;margin-left:6px}
+.cs-quiz-item{padding:4px 0 6px;border-top:1px solid #e3eaf0;margin-top:10px}
+.cs-quiz-item:first-of-type{border-top:0;margin-top:0}
+.cs-qno{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#101c39;color:#fff;font-size:15px;margin-right:6px;vertical-align:2px}
+.cs-feedback{margin:0 0 14px}
+.cs-feedback:empty{display:none}
+.cs-result.is-wrong{color:#a33a2c}
+@media(max-width:760px){.cs-rich .cs-text p,.cs-rich li{font-size:17px}.cs-reader .cs-code pre,.cs-reader .cs-out pre{font-size:14.5px;padding-left:14px;padding-right:14px}.cs-core,.cs-analogy{padding:14px 16px}.cs-rich h3{font-size:19px}}
+.cs-rich .cs-code pre,.cs-rich .cs-out pre{font-size:16px!important;line-height:1.75!important;border:0!important;border-radius:0}
+@media(max-width:760px){.cs-rich .cs-code pre,.cs-rich .cs-out pre{font-size:14.5px!important}}

@@ -30,8 +30,10 @@ function bank(){
   }
   for(const ch of window.COURSE_CHAPTERS||[]){
     for(const p of ch.pages){
-      if(!p.quiz||p.kind==='structure')continue;
-      list.push({id:({'discrete-math':'dm','data-communication':'dc'}[ch.course]||'pl')+'-mc-'+ch.id+'-'+p.page,course:ch.course||'programming-languages',src:[ch.id,p.page],type:'mc',q:p.quiz[0],options:p.quiz[1],answer:0,why:p.quiz[2],reasons:p.quizReasons,title:p.title});
+      if(p.kind==='structure')continue;
+      const base=({'discrete-math':'dm','data-communication':'dc'}[ch.course]||'pl')+'-mc-'+ch.id+'-'+p.page;
+      const qs=p.quizzes&&p.quizzes.length?p.quizzes:(p.quiz?[[...p.quiz,p.quizReasons]]:[]);
+      qs.forEach((x,k)=>list.push({id:k?base+'-q'+(k+1):base,course:ch.course||'programming-languages',src:[ch.id,p.page],type:'mc',q:x[0],options:x[1],answer:0,why:x[2],reasons:x[3],title:p.title}));
     }
   }
   for(const x of window.EXAM_BANK||[])list.push(x);
@@ -81,7 +83,7 @@ function pageQuizWrongs(courseId){
   const out=[];
   if(courseId==='unix'){const a=readJSON('unix-lab-progress-v1').answers||{};for(const l of window.LESSONS||[]){const r=a[l.id];if(r&&!r.correct&&!UNIX_SKIP.has(l.id))out.push('ux-mc-'+l.id);}return out;}
   const rec=readJSON('course-study-v1').pages||{};
-  for(const ch of window.COURSE_CHAPTERS||[]){if((ch.course||'programming-languages')!==courseId)continue;ch.pages.forEach(p=>{const r=rec[`${courseId}:${ch.id}:${p.page}`];if(r&&r.answer!==undefined&&r.answer!==0&&p.quiz&&p.kind!=='structure')out.push((PREFIX[courseId]||'pl')+'-mc-'+ch.id+'-'+p.page);});}
+  for(const ch of window.COURSE_CHAPTERS||[]){if((ch.course||'programming-languages')!==courseId)continue;ch.pages.forEach(p=>{const r=rec[`${courseId}:${ch.id}:${p.page}`],base=(PREFIX[courseId]||'pl')+'-mc-'+ch.id+'-'+p.page;if(!r||p.kind==='structure')return;if(p.quizzes&&p.quizzes.length){const ver=ch.quizVersion||'q';p.quizzes.forEach((x,k)=>{const a=r.quizAnswers?.[ver+':'+k];if(a!==undefined&&a!==0)out.push(k?base+'-q'+(k+1):base);});}else if(r.answer!==undefined&&r.answer!==0&&p.quiz)out.push(base);});}
   return out.filter(byId);
 }
 function doneSet(courseId){

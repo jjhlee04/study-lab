@@ -214,3 +214,13 @@ Learning tabs fade out after 2 seconds without scrolling. Pointer interaction or
 The transient reading tab bar includes a course-menu button. It opens the current course navigation and other courses without returning to the page header. Closing the menu preserves the reading position; the tab bar remains visible while the dialog is open. Local QA covered desktop/tablet/mobile layouts, single-page and continuous readers, Unix routes, touch, keyboard focus and dark mode.
 
 Page-level Explanation / Source / Quiz links appear beside the page title and at the end of each view. Switching keeps the same PDF page and remembers each view's reading offset for the open tab. Quiz controls are omitted when no quiz exists; the continuous quiz stream skips those pages. The original Unix reader uses the same links while retaining its existing progress keys. Local QA covered desktop/mobile round trips, position restoration, retained grading, the no-quiz case, and the course menu.
+
+## PL 09 데이터 타입 교재 보강
+
+- `dist/pl-types.js`를 원고(`authoring/programming-languages/pl09_*.py`, `build_pl09.py`)에서 생성하도록 바꿨습니다. 쪽 번호·순서는 영문 원문 PL-09-Types.pdf 96쪽을 따릅니다.
+- 학습 86쪽: 핵심 개념·쉬운 비유·예제(코드/실행 결과/오류를 색으로 구분)·단계별 풀이·헷갈리는 점·한 줄 정리, 퀴즈 쪽당 3개(총 258개, 제출 전 정답 숨김).
+- 표지·목차·구분 쪽·참고문헌(1, 2, 3, 10, 20, 55, 66, 74, 84, 96쪽)은 안내만 표시하고 퀴즈가 없습니다.
+- 자료 검토 5건: 7쪽 NaN 주석, 8쪽 untyped 용어, 48쪽 Scheme 벡터 크기, 52쪽 "배열은 상수 포인터", 83쪽 String.parseInt → Integer.parseInt. 51쪽은 C++ 참조 예제로 바로잡았습니다.
+- `course-study.js`: 한 쪽에 여러 퀴즈(`page.quizzes`)를 지원합니다. 답은 `quizAnswers['v2:번호']`에 저장되며, 이전 PL 09 단일 퀴즈의 `answer` 기록은 문제가 바뀌어 채점에 쓰지 않습니다(학습 완료 표시는 유지). 다른 과목은 기존 단일 퀴즈 방식 그대로입니다.
+- `exam.js`: 추가 퀴즈를 `pl-mc-pl09-쪽-q2/-q3` id로 모의고사 문항 은행과 오답 노트에 포함합니다.
+- 예제의 Java·C·C++ 결과와 오류 문구는 javac/gcc/g++로 직접 확인했습니다(Ada·ML 출력은 구현마다 형식이 다를 수 있다고 표시).
