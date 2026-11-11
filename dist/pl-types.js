@@ -4,8 +4,7 @@
   window.COURSE_CHAPTERS.push({
  "id": "pl09",
  "title": "PL 09 · 데이터 타입",
- "url": "PL-09-Types.pdf",
- "localSource": true,
+ "url": "original/PL-09-Types.pdf",
  "startPage": 4,
  "finalRange": "전체",
  "quizVersion": "v2",
@@ -15,21 +14,27 @@
    "title": "데이터 타입 · 표지",
    "explanation": "Programming Languages 10장 \"Data Types\"(교재 Louden & Lambert 8장) 표지입니다. 이 사이트에서는 PL 09로 분류했습니다. 학습 내용과 퀴즈는 4쪽부터 시작합니다.",
    "kind": "structure",
-   "role": "표지"
+   "role": "표지",
+   "image": "pages/pl09-01.jpg",
+   "text": "Programming Languages\n10. Data Types\n(Chapter 8)\nJi Eun Kim\nFall 2026"
   },
   {
    "page": 2,
    "title": "이 장의 주제",
    "explanation": "이 장은 다음 순서로 진행합니다.\n① 데이터 타입과 타입 정보 → ② 타입 시스템(강한·약한·동적 타입) → ③ 단순 타입(열거형, 부분 범위) → ④ 타입 생성자(곱, 합, 부분집합, 배열·함수, 포인터) → ⑤ 타입 동등성 → ⑥ 타입 검사 → ⑦ 타입 변환 → ⑧ 다형적 타입 검사(Hindley-Milner).\n앞에서 만든 개념이 뒤에서 계속 쓰이므로 순서대로 읽는 것을 권합니다.",
    "kind": "structure",
-   "role": "목차"
+   "role": "목차",
+   "image": "pages/pl09-02.jpg",
+   "text": "Topics\n\n• Data types and type information\n• Type system\n• Simple types\n• Type constructors\n• Type equivalence\n• Type checking\n• Type conversion\n• Polymorphic type checking\n2"
   },
   {
    "page": 3,
    "title": "구분 · 데이터 타입과 타입 정보",
    "explanation": "첫 단원 \"Data Types and Type Information\"의 구분 쪽입니다. 다음 쪽에서 타입의 두 가지 정의를 배웁니다.",
    "kind": "structure",
-   "role": "구분 쪽"
+   "role": "구분 쪽",
+   "image": "pages/pl09-03.jpg",
+   "text": "Data Types and Type Information\n\n3"
   },
   {
    "page": 4,
@@ -111,6 +116,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-04.jpg",
+   "text": "Data Types and Type Information\n\n• Type name represents the possible values that a variable of that type\n•\n\ncan hold and the way those values are represented internally\nData type (definition 1): a set of values\n• e.g., int in Java:\nint x;\nx Î Integers= [-2147483648, 2147483647]\n\n• Data type (definition 2): a set of values, together with a set of\noperations on that values having certain properties, e.g.,\n– arithmetic operations on integers or reals\n– subscript operation [ ] on arrays\n– member selection operation on structure or record types\n\n4",
    "quiz": [
     "원문의 정의 2에 따르면 데이터 타입은 무엇인가?",
     [
@@ -214,6 +221,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-05.jpg",
+   "text": "Why are data types important?\n● Example: z = x / y; (Java)\n\nint x, y;\nx = 5;\ny = 2;\nz = x / y;\ndouble x, y;\nx = 5;\ny = 2;\nz = x / y;\n\n■\n\ninteger division, x/y results in 2.\n\n■\n\nint z: z = 2;\n\n■\n\ndouble z:\n\n■\n\nfloating-point division, x/y results in 2.5\nint z: wrong!\ndouble z: z = 2.5;\n\n■\n■\n\nz = 2.0;\n\n5",
    "quiz": [
     "int x = 5, y = 2; double z = x / y; 일 때 z의 값은?",
     [
@@ -310,6 +319,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-06.jpg",
+   "text": "Strongly-Typed Languages\nStrongly-typed: (Ada, ML, Haskell, Java, Pascal)\n○ Most data type errors detected at translation time\n○ A few checked during execution and runtime error reported (e.g.,\nsubscript out of array bounds).\n● Pros:\n○ No data-corrupting errors can occur during execution. (i.e., no unsafe\nprogram can cause data errors.)\n○ Efficiency (in translation and execution.)\n○ Security/reliability\n● Cons:\n○ May reject safe programs (i.e., legal programs is a subset of safe\nprograms.)\n○ Burden on programmers, may often need to provide explicit type\ninformation.\n\n6",
    "quiz": [
     "원문이 강한 타입 언어에서도 \"실행 중\"에 검사한다고 든 예는?",
     [
@@ -419,6 +430,8 @@
     "label": "보충 설명 · 원문 주석의 적용 범위",
     "ask": "강의에서 이 주석을 double 매개변수 기준으로 설명했는지 확인하세요."
    },
+   "image": "pages/pl09-07.jpg",
+   "text": "Legal programs ⊂ Safe programs: Java examples\n실제 type 은 맞지만 선언이 다른 경우\nObject o = \"hello\";\nString s = o;\n// Compilation error: Object를 String에 대입할 수 없음\n절대 실행 되지 않는 코드\nif (false) {\nint n = \"abc\"; // Compilation error\n}\n모든 경우에 return하지만 compile는 모름\nint sign(int n) {\nif (n >= 0) return 1;\nif (n < 0) return -1;\n} // Compilation error : missing return statement\n// double n=NaN 일 경우 unsafe!\n\n=>\n\n//legal\nint sign(int n) {\nif (n >= 0) return 1;\nelse return -1;\n// 구조만 봐도 모든 경로가 return\n}\n7",
    "quiz": [
     "Object o = \"hello\"; String s = o; 는 Java에서 어떻게 되는가?",
     [
@@ -538,6 +551,8 @@
     "label": "용어 보충 · 일반 교재 용법과 대조",
     "ask": "시험 답안에서 untyped와 dynamically typed를 같은 뜻으로 써도 되는지 강의 기준을 확인하세요."
    },
+   "image": "pages/pl09-08.jpg",
+   "text": "Weakly-typed and untyped languages\n\n• Weakly-typed language: one that has loopholes that may allow unsafe\nprograms\n• Example: C, C++\n• interoperability of integers, pointers, arrays.\n\ne.g., int *p = (int *)0x1000; // 컴파일러가 해당 주소에 실제로 유효한 정수\n데이터가 있는지 검사할 수 없음\n\n• Untyped (or dynamically typed) languages: languages without static\ntype systems\n– All safety checking is performed at execution time\n– Code with type errors: slower execution time\n– Example: Scheme, smalltalk, script languages (Python, Ruby)\n– Python: ”1” + 1 #TypeError!\n\n8",
    "quiz": [
     "Python에서 \"1\" + 1을 실행하면?",
     [
@@ -641,6 +656,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-09.jpg",
+   "text": "Design Trade-off: Security vs. flexibility\n● A type system tries to maximize both flexibility and security\n○\n\nflexibility:\n■ reduce the number of safe illegal programs &\n■ reduce the amount of type information the programmer must\nsupply.\n\n● Flexibility, no explicit typing or static type checking\n\nvs.\n● Maximum restrictiveness, static type checking\n\n9",
    "quiz": [
     "원문이 말하는 유연성(flexibility)을 높이는 방법은?",
     [
@@ -661,7 +678,9 @@
    "title": "구분 · 단순 타입",
    "explanation": "\"Simple Types\" 단원의 구분 쪽입니다. 다음 쪽부터 정수·문자 같은 기본 타입과 열거형·부분 범위 타입을 다룹니다.",
    "kind": "structure",
-   "role": "구분 쪽"
+   "role": "구분 쪽",
+   "image": "pages/pl09-10.jpg",
+   "text": "Simple Types\n\n10"
   },
   {
    "page": 11,
@@ -753,6 +772,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-11.jpg",
+   "text": "Simple Data Types\n● Have no other structure than their inherent arithmetic or sequential\n\nstructure (내부적으로 더 이상 분해할 수 없는 최소 단위의 데이터 형태)\n○\n\ne.g., integer, double, character, and boolean.\n\n● Often directly supported in hardware.\n\nmachine dependency (e.g., ALU, FPU)\n● Most predefined types (e.g., int, double, short, long,\nunsigned int)are simple types.\n○ exceptions: e.g., String in Java ( not simple type).\n○\n\n● Some simple types are not predefined\n○\n○\n\nenumerated types\nsubrange types\n\n11",
    "quiz": [
     "원문이 \"기본 제공이지만 단순 타입은 아니다\"라고 든 예는?",
     [
@@ -856,6 +877,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-12.jpg",
+   "text": "Enumerated Types\nOrdered set, whose elements are named and listed explicitly.\n● Examples:\nenum Color_Type {Red, Green, Blue};\n\n( C )\n\ntype Color_Type is (Red, Green, Blue);\n\n( Ada )\n\ndatatype Color_Type = Red | Green | Blue;\n\n( ML )\n\n● Operations?\n○\n\nSuccessor and predecessor\n\n● Internal representation is varied.\n○\n\nAda: actual names\n\n○\n\nC: integer (0, 1, .. or defined by the programmer )\n\n12",
    "quiz": [
     "원문이 열거형의 연산으로 든 것은?",
     [
@@ -959,6 +982,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-13.jpg",
+   "text": "Ada Example\ntype Color_Type is (Red, Green, Blue);\nx : Color_Type := Green;\nx := Color_Type’Succ(x); -- Blue\nx := Color_Type’Pred(x); -- Green\nput(x);\n-- prints GREEN\n\nx := Color_Type’Succ(x);\nx := Color_Type’Succ(x);\n-- runtime error\n\n● No assumptions about the internal representation of values\n● Print the value name itself\n\n13",
    "quiz": [
     "x := Green; x := Color_Type'Succ(x); x := Color_Type'Pred(x); put(x); 의 출력은?",
     [
@@ -1056,6 +1081,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-14.jpg",
+   "text": "C Example\n#include <stdio.h>\nenum Color {Red, Green, Blue}; // 0, 1, 2\nenum NewColor {NewRed=3, NewGreen=2, NewBlue=2};\nint main() {\nenum Color x = Green;\n// x is 1\nenum NewColor y = NewBlue; // y is 2\nx++;\n// 2 -- Blue\ny--;\n// 1 -- not even in the enum\nprintf(\"%d\\n“,x); //2\nprintf(\"%d\\n\",y); //1\nreturn 0;\n}\n\n● enum in C is simply int\n● Can customize the values\n\n14",
    "quiz": [
     "원문 예제에서 x++ 후 printf(\"%d\\n\", x)의 출력은?",
     [
@@ -1152,6 +1179,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-15.jpg",
+   "text": "Java enum Example – not simple type, but class\npublic enum Planet { // static and final object\nMERCURY (2.4397e6), EARTH (6.37814e6);\nprivate final double radius; //\nPlanet(double radius) { this.radius = radius; }\nprivate double radius() { return radius; }\npublic static void main(String[] args) {\nfor (Planet p : Planet.values())\nSystem.out.printf(“The radius of\n%f\\n\", p, p.radius());\n}\n}\n\n%s is\n\nThe radius of MERCURY is 2439700.000000\n15\nThe radius of EARTH is 6378140.000000",
    "quiz": [
     "Java enum 상수 MERCURY의 정체는?",
     [
@@ -1246,6 +1275,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-16.jpg",
+   "text": "Evaluation of Enumeration Types\n● Efficiency – e.g., compiler can select and use a compact efficient\n\nrepresentation (e.g., small integers)\n● Readability -- e.g. no need to code a color as a number\n● Maintainability – e.g., adding a new color doesn’t require updating\n\nhard-coded constants.\n● Reliability -- e.g. compiler can check operations and ranges of value.\n\n16",
    "quiz": [
     "\"새 색을 추가해도 하드코딩된 상수를 고칠 필요가 없다\"는 어떤 장점인가?",
     [
@@ -1349,6 +1380,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-17.jpg",
+   "text": "C Example for Maintainability\nenum Color {White, Green, Blue, Black};\n//initial, Green => 1\nenum Color {White, Yellow, Green, Blue, Black}; // added Yellow later, Green=>2\nint main(){\nenum Color x = Black;\nint i = x;\nwhile (i >= White){\nif (i < Green) //Intention: green 보다 작으면 밝은 색\nprintf(“this is a light color!\\n”);\ni--;\n}\n..\n}\nWhat if no enumeration?\nif (i < 1) printf(“this is a light color!\\n”);\n=> Has to be changed to:\nif (i < 2) printf(“this is a light color!\\n”);\n17",
    "quiz": [
     "Yellow를 추가한 뒤 Green의 정수 값은?",
     [
@@ -1454,6 +1487,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-18.jpg",
+   "text": "Ada Example for Reliability\ntype DAY is (MON, TUE, WED, THU, FRI, SAT, SUN);\ntype DIRECTION is (NORTH, EAST, SOUTH, WEST);\nGOAL : DIRECTION;\nTODAY : DAY;\nSTART : DAY;\nTODAY := MON;\nGOAL := WEST;\nSTART := TODAY;\nTODAY := WEST; -- Illegal: WEST is not a DAY value at compile time\nTODAY := 5; -- Illegal: 5 is not a DAY value\nTODAY := TODAY + START; -- Illegal: \"+\" is not defined for DAYS\n18",
    "quiz": [
     "TODAY := WEST; 가 거부되는 이유는?",
     [
@@ -1550,6 +1585,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-19.jpg",
+   "text": "Subrange Types and Ordinal Types\n\n• Subrange types: contiguous subsets of simple types specified by giving\n•\n\nleast and greatest elements\nExample in Ada:\n\ntype Digit_Type is range 0..9; //0, 1, 2, 3,…, 8, 9\n\n• Ordinal (서수) types: types that exhibit a discrete order on the set of\nvalues\n\n– All numeric integer types are ordinal types\n– Always have comparison operators\n– Often have successor and predecessor operations\n\n• Real numbers are not ordinal; they have no successor and predecessor\noperations\n\n19",
    "quiz": [
     "다음 중 서수(ordinal) 타입이 아닌 것은?",
     [
@@ -1570,7 +1607,9 @@
    "title": "구분 · 타입 생성자",
    "explanation": "\"Type Constructors\" 단원의 구분 쪽입니다. 다음 쪽부터 기존 타입을 조합·제한해 새 타입을 만드는 방법(곱, 합, 부분집합, 함수·배열, 포인터)을 다룹니다.",
    "kind": "structure",
-   "role": "구분 쪽"
+   "role": "구분 쪽",
+   "image": "pages/pl09-20.jpg",
+   "text": "Type Constructors\n\n20"
   },
   {
    "page": 21,
@@ -1655,6 +1694,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-21.jpg",
+   "text": "Type Constructors: Defining New Types\n● Type constructors as set operations:\n○\n○\n○\n○\n\nCartesian product (e.g., record, struct, tuple)\nUnion (e.g., (un)tagged union)\nSubset (e.g., subrange)\nFunctions (Arrays)\n\n● Some type constructors do not correspond to set operations (e.g.,\n\npointers, closer to memory structure)\n● Some set operators don’t have corresponding type constructors (e.g.,\n\nintersection)\n21",
    "quiz": [
     "record·struct는 어떤 집합 연산에 대응하는가?",
     [
@@ -1758,6 +1799,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-22.jpg",
+   "text": "Cartesian Product (데카르트 곱)\n● Ordered pairs of elements from U and V\n\nU ´ V = {(u, v) | u Î U and v ÎV}\n● Operations: projection\n\np1: U ´ V → U; p2 : U ´ V → V\np1((u,v))=u;\n\np2((u,v))=v\n\n● Cartesian Product is available as the record or structure in many\n\nprogramming languages.\n\n22",
    "quiz": [
     "p2((3, 'a'))의 값은?",
     [
@@ -1861,6 +1904,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-23.jpg",
+   "text": "Example: Cartesian Product of Type\n● struct in C :\n\nstruct IntCharReal\n{\n\n● record in Ada\n\ntype IntCharReal is record\n\nint i;\n\ni: integer;\n\nchar c;\n\nc: character;\n\ndouble r;\n\nr: float;\n\n};\n\nend record;\n\nint ´ char ´ double\n\nint ´ character ´ float\n23",
    "quiz": [
     "struct IntCharReal { int i; char c; double r; }이 나타내는 곱은?",
     [
@@ -1957,6 +2002,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-24.jpg",
+   "text": "C Example: the same type?\nstruct IntCharReal\n{\nint i;\nchar c;\ndouble r;\n};\n\nstruct IntCharReal\n{\nchar c;\nint i;\ndouble r;\n};\n\n24",
    "quiz": [
     "필드 순서만 다른 두 구조체({int i; char c; double r;}와 {char c; int i; double r;})는?",
     [
@@ -2052,6 +2099,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-25.jpg",
+   "text": "C Example: the same type?\nstruct IntCharReal\n{\nint i;\nchar c;\ndouble r;\n}\n\nstruct IntCharReal\n{\nint j;\nchar ch;\ndouble d;\n}\n\n25",
    "quiz": [
     "필드 이름만 다른 두 구조체를 \"순수 데카르트 곱\"으로 본다면?",
     [
@@ -2147,6 +2196,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-26.jpg",
+   "text": "Record/structure are not exactly Cartesian products\n\n• Cartesian product vs. a record structure:\n\n– Cartesian product: they are referred to by position\n– Record/struct structure: components have names\n\n● Most languages consider component names to be part of the type\n\ndefined by a record structure\n● Component selector: projection by component names\n\nstruct IntCharReal x;\n\nx.i;\n\n● Thus the previous two types can be considered different, even\n\nthough they represent the same Cartesian product.\n26",
    "quiz": [
     "데카르트 곱에서 성분을 가리키는 방법은?",
     [
@@ -2242,6 +2293,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-27.jpg",
+   "text": "ML: Pure Cartesian Product\nTuple: a purer form of record structure in ML that is essentially identical to\nthe Cartesian product\n#1\n\n#2\n\n#3\n\ntype IntCharReal = int * char * real;//No name for type\n● (2, #\"a\", 3.14)\n● #3(2, #\"a\", 3.14) => 3.14\n○\n\nget the value of #3 position\n\n27",
    "quiz": [
     "#3(2, #\"a\", 3.14)의 값은?",
     [
@@ -2339,6 +2392,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-28.jpg",
+   "text": "Union\n● U È V = { x | xÎU or xÎV}\n○\n\nData items with different types are stored in overlapping region,\nreduce memory allocation.\n\n○\n\nOnly one type of value is valid at one time.\n\n● Unions are useful in reducing memory allocation requirements for\n\nstructures when different data items are not needed simultaneously\n● Two varieties:\n○\n\nDiscriminated unions: a tag or discriminator is added to the\nunion to distinguish the type of its elements\n\n○\n\nUndiscriminated unions: lack the tags\n\n● A language with undiscriminated unions has an unsafe type system\n28",
    "quiz": [
     "union { int i; double r; }의 크기는 일반적으로 무엇에 맞춰지는가?",
     [
@@ -2435,6 +2490,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-29.jpg",
+   "text": "Undiscriminated Union in C\n● In C and C++, the union type constructor creates undiscriminated unions\nunion IntOrReal {\nint i;\ndouble r;\n};\nunion IntOrReal x;\nx.i = 1;\nprintf(“%f\\n”, x.r); // print an unexpected value\n● No tag/discriminator to distinguish which type the element is\n● Can be unsafe\n29",
    "quiz": [
     "x.i = 1; 다음 printf(\"%f\\n\", x.r);의 결과로 가장 알맞은 설명은?",
     [
@@ -2539,6 +2596,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-30.jpg",
+   "text": "Create Discriminated Union in C++\nstruct IntOrReal {\nbool isInt;\nunion {\nint i;\ndouble r;\n};\n};\n\n• Safe now or not?\n• Still unsafe! Since it is upto\nthe programmer\n\nIntOrReal x;\nx.isInt = true;\nx.i = 1;\n...\nif (x.isInt) printf(“%d\\n”, x.i);\nelse printf(“%f\\n”, x.r);\n30",
    "quiz": [
     "원문은 bool 태그를 붙인 C++ struct + union을 어떻게 평가하는가?",
     [
@@ -2636,6 +2695,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-31.jpg",
+   "text": "Discriminated Union in Ada\n● Variant record (with tag or discriminator)\ntype Disc is (IsInt, IsReal);\nSafe!: programmers\ntype IntOrReal (which: Disc) is\nwon’t be able to create\nrecord\ninconsistent data\ncase which is\nwhen IsInt => i: integer;\nwhen IsReal => r: float;\nend case;\nend record;\n...\nx: IntOrReal := (IsReal, 2.3);\nput (x.i); -- generates ERROR at execution time,\n-- x.which = IsReal at this point\n31",
    "quiz": [
     "x: IntOrReal := (IsReal, 2.3); 다음 put(x.i);를 실행하면?",
     [
@@ -2733,6 +2794,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-32.jpg",
+   "text": "Subset\n● U = { v | v satisfies certain conditions and v ∈ V}\n● Ada subtype mechanism: by specifying subrange (lower and upper\n\nbound)\n● Example 1\n○\n\ntype Digit_Type is range 0..9;\n\ncompletely new type\nInteger와 연산 불가\n\nvs.\n○\n\nsubtype IntDigit_Type is integer range 0..9;\nsubtype\nInteger와 연산 가능\n32",
    "quiz": [
     "subtype IntDigit_Type is Integer range 0..9;인 S와 Integer I에 대해 I + S는?",
     [
@@ -2839,6 +2902,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-33.jpg",
+   "text": "subtype in Ada\n● Example 2\ntype Disc is (IsInt, IsReal);\ntype IntOrReal (which: Disc) is record\ncase which is\nwhen IsInt => i: integer;\nwhen IsReal => r: float;\nend case;\nend record;\nsubtype IRInt is IntOrReal(IsInt);\nsubtype IRReal is IntOrReal(IsReal);\n\nsubset types inherit operations\nfrom their parent types.\n\nx: IRReal := 2.3; -- compile error\nx: IRReal := (IsReal, 2.3); -- OK\n33",
    "quiz": [
     "x: IRReal := 2.3;이 컴파일 오류인 이유는?",
     [
@@ -2933,6 +2998,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-34.jpg",
+   "text": "Subset\n\n• Subset types inherit operations from their parent types\n– Most languages do not allow the programmer to specify which\noperations are inherited and which are not\n\n• Inheritance in object-oriented languages can also be viewed as a\nsubtype mechanism\n\n– With a great deal more control over which operations are inherited\n\n34",
    "quiz": [
     "대부분의 언어에서 부분집합 타입이 상속할 연산을 프로그래머가 고를 수 있는가?",
     [
@@ -3028,6 +3095,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-35.jpg",
+   "text": "Arrays and Functions\n\n• The set of all functions f:U→V\n• Array type or\n• Function type\n개념\n\n수학적 정의\n\n프로그래밍\n\n타입 f:U→V\n\n집합 U에서 집합 V로의 모든\n함수들의 집합\n\n배열 타입 또는 함수 타입\n\nArray\n\nU가 서수 타입(ordinal type)일\n때의 함수\n\n인덱스(U)에 의해\n컴포넌트/요소(V)를 찾는 매핑\n\nFunction\n\nU를 입력으로, V를 출력으로\n하는 매핑\n\n매개변수(U)를 받아 반환 값(V)을\n계산하는 로직\n35",
    "quiz": [
     "배열 int a[3]을 함수 f: U → V로 볼 때 U와 V는?",
     [
@@ -3132,6 +3201,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-36.jpg",
+   "text": "Array in C/C++\n● Allocated on stack (for local array), size statically specified (at compile\n\ntime).\ntypedef int TenIntArray [10];\ntypedef int IntArray []; // array type w/o size: OK\n//(incomplete type, no memory allocation)\nTenIntArray x;\nint y[5];\nint z[]={1,2,3,4}; // OK. size inferred from\n// initializer:4\nIntArray w = {1,2}; // OK. size become 2\nIntArray v;\n//illegal(block scope):size unknown\n\n36",
    "quiz": [
     "int z[] = {1, 2, 3, 4};에서 z의 원소 수는?",
     [
@@ -3229,6 +3300,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-37.jpg",
+   "text": "Array in C/C++\nint n = ... //from user input\nint a[n]; // VLA\n○\n\nVLA (Variable Length Array):배열 크기를 실행 중에 정해서\n지역 배열을 선언할 수 있게 컴파일러가 처리\n■ C89/C++ : illegal (1989년), array size must be a constant\n■ C99: legal (VLA, local arrays only)\n■ C11(2011년) and later: optional feature\nC version: C89 → C99 → C11 → C17 → C23\n37",
    "quiz": [
     "VLA가 처음 합법이 된 C 표준은?",
     [
@@ -3332,6 +3405,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-38.jpg",
+   "text": "Array in C/C++\n● dynamically defining an array size in C++:\n\nint f(int size) {\nint a[size]; // C++: illegal / C99: legal / C11+: optional\n}\n\n38",
    "quiz": [
     "표준 C++에서 int f(int size) { int a[size]; }는?",
     [
@@ -3428,6 +3503,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-39.jpg",
+   "text": "Array in C/C++\n● An array parameter can omit its size int array_max(int a[], int size)\n○\n○\n○\n\na is actually a pointer (int *a); only the address is passed\nSo the size must be passed separately\nsizeof(a) gives the pointer size, not the array size\n\nint array_max (int a[], int size){\nint temp;\n...\nreturn temp;\n}\n39",
    "quiz": [
     "함수 매개변수 int a[]에 대해 함수 안의 sizeof(a)는?",
     [
@@ -3523,6 +3600,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-40.jpg",
+   "text": "Array in Java\n● Allocated on heap, size dynamically specified;\n● Size can be obtained by .length (a part of array information)\n\nint n = ...\n//from user input\nint [] x = new int [n]; // not illegal\nSystem.out.println(x.length);\n\n40",
    "quiz": [
     "원문에 따르면 Java 배열이 할당되는 곳은?",
     [
@@ -3619,6 +3698,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-41.jpg",
+   "text": "Array in Ada\n● size dynamically specified; allocation on stack\n● Set of subscripts\n\ntype IntToInt is array(integer range <>) of integer;\nn : Integer;\nget(n);\n-- from user input\ndeclare\nx: IntToInt(1..n) :=(others =>0);\nbegin\nfor i in x’range loop\nput(x(i));\nend loop;\nend;\n41",
    "quiz": [
     "type IntToInt is array(integer range <>) of integer;에서 range <>의 뜻은?",
     [
@@ -3724,6 +3805,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-42.jpg",
+   "text": "Ada vs. C\n-- Ada\nget(n);\n-- from user input\ndeclare\nx: IntToInt(1..n) :=(others =>0);\nbegin\nfor i in x’range loop\nput(x(i));\nend loop;\nend;\n\n/* C99 */\nscanf(\"%d\", &n);\n{\nint x[n];\nfor (int i = 0; i < n; i++)\nprintf(\"%d\", x[i]);\n}\n\nx[n] ?\n\n42",
    "quiz": [
     "C99 코드에서 x[n]에 접근하면?",
     [
@@ -3820,6 +3903,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-43.jpg",
+   "text": "Multi-dimensional arrays\n● C/C++:\n\nint x[10][20];\n\n● Java: int [][] x = new int [10][20];\n● Ada: These two are different\n\ntype Matrix_Type is array(1..10, -10..10) of\ninteger;\nx(i,j); -- 2차원 배열\ntype Row is array(-10..10) of Integer\ntype Matrix_Type is array(1..10) of Row;\nx(i)(j); -- 배열의 배열\n43",
    "quiz": [
     "type Matrix_Type is array(1..10, -10..10) of integer;의 원소 수는?",
     [
@@ -3925,6 +4010,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-44.jpg",
+   "text": "Storage for Array (1/2)\n● row-major form\n\nx[1,-10],x[1,-9],…,x[1,10],x[2,-10],…,x[2,10],x[3,10],…\n● column-major form\n\nx[1,-10],x[2,-10],…,x[10,-10],x[1,-9],…,x[10,9],x[1,-8],…\n● C/C++: must be row-major form\n\nint array_max(int a[][20], int size)\n○\n\nrow-major form: The size of the 2nd dimension is required for\ncompiler to compute the distance in memory between a[i] and a[i+1]\n44",
    "quiz": [
     "C의 int a[3][4]에서 a[2][1]의 원소 단위 오프셋은?",
     [
@@ -4020,6 +4107,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-45.jpg",
+   "text": "Storage for Array (2/2)\n● Java\nint array_max(int [][]a)\n○\n\n호출 시 배열을 넘기면 크기는 .length로 알 수 있음\n\nint[][] t = new int[][] { {4}, {8, 6, 1, 2}, {5, 0} };\narray_max(t);\n\n45",
    "quiz": [
     "t = { {4}, {8, 6, 1, 2}, {5, 0} }일 때 t[1].length는?",
     [
@@ -4115,6 +4204,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-46.jpg",
+   "text": "Function Type in C\n● General function and procedure types can be created in some languages.\n● Example: in C, define a function type from integers to integers:\n● define a function type with int parameter and int return\ntypedef int (*IntFunction)(int);\npointer to function\n● Use this type for variables or parameters:\nint square(int x) {return x*x;}\nIntFunction f = square;\nint evaluate(IntFunction g, int value){\nreturn g(value);\n}\n…\nprintf(“%d\\n”,evaluate(f,3)); // square(3)\n46",
    "quiz": [
     "원문 예제에서 printf(\"%d\\n\", evaluate(f, 3));의 출력은?",
     [
@@ -4211,6 +4302,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-47.jpg",
+   "text": "Function Type in ML\ntype IntFunction = int -> int;\nfun square(x: int) = x * x;\n함수 본문 시작\nval f = square;\nfun evaluate(g:IntFunction, value:int) = g value;\n…\ng를 value에 적용\nevaluate(f,3); (*evaluates to 9 *)\nFunction: First class value\n47",
    "quiz": [
     "evaluate(f, 3);의 결과는?",
     [
@@ -4311,6 +4404,8 @@
     "label": "보충 설명 · 표준 Scheme 대조",
     "ask": "강의에서 Scheme 벡터의 \"동적 크기\"를 생성 시점의 크기 결정으로 설명했는지 확인하세요."
    },
+   "image": "pages/pl09-48.jpg",
+   "text": "Vector, List\nFunctional languages: usually do not supply array\n● Vectors: like arrays, more flexibility, especially dynamic resizability.\n\n(Scheme)\n● Lists: like vectors, can only be accessed by counting down from the\n\nfirst element.\n\n48",
    "quiz": [
     "원문에 따르면 리스트의 원소에 접근하는 방식은?",
     [
@@ -4406,6 +4501,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-49.jpg",
+   "text": "Pointer\n● A pointer type: range of values consists of memory addresses and a special\nvalue, nil, or null\n*ptr\n● Advantages:\nptr+1\n○ Addressing flexibility (address arithmetic, explicit dereferencing and\n&var address-of operator, domain type not fixed (void *))\n○ Dynamic storage management e.g.,\n■ malloc /new, free/delete\n○ Recursive data structures, e.g., linked list\nstruct CharListNode{\nchar data;\nstruct CharListNode* next;\n};\ntypedef struct CharListNode* CharList;\n\n49",
    "quiz": [
     "포인터 타입의 값의 범위는?",
     [
@@ -4501,6 +4598,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-50.jpg",
+   "text": "Pointers and Recursive Types\n\n• Reference or pointer constructor: constructs the set of all addresses\n•\n\nthat refer to a specified type\nExample in C: typedef int* IntPtr;\n\n– Constructs the type of all addresses where integers are stored\n\n• Pointers are implicit in languages that perform automatic memory\nmanagement\n– In Java, all objects are implicitly pointers that are allocated explicitly\n(using the new operator) but deallocated automatically by garbage\ncollection\n\n50",
    "quiz": [
     "C의 typedef int* IntPtr;가 만드는 타입은?",
     [
@@ -4605,6 +4704,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-51.jpg",
+   "text": "Pointers and Recursive Types (cont’d.)\n\n• Reference(&): address of an object under control of the system that\ncannot be used as a value or operated on in any way (except copying)\n\n• Alias of an object\n• Pointer: can be used as a value and manipulated by the programmer\n• References in C++ are created by a postfix & operator\ndouble r= 2.3;\ndouble& s = r;\n\n// s is a reference to r. C++ only\n\ns +=1;\ncout << r << endl; // prints 3.3\n51",
    "quiz": [
     "원문 예제에서 cout << r << endl;의 출력은?",
     [
@@ -4709,6 +4810,8 @@
     "label": "원문 단순화 · C 표준 규칙으로 보충",
     "ask": "시험에서 \"배열은 상수 포인터\"라는 원문 표현을 그대로 쓰는지 확인하세요."
    },
+   "image": "pages/pl09-52.jpg",
+   "text": "Pointer and Array\n● Array are implicitly constant pointers to their first component.\n\nint a[] = {1,2,3,4,5};\nint* p = a;\n\n// a[0] = 1, etc.\n\n// p points to first component of a\n\nprintf(\"%d\\n\", *p);\n\n// prints value of a[0], so 1\n\nprintf(\"%d\\n\", *(p+2)); // prints value of a[2]= 3\nprintf(\"%d\\n\", *(a+2)); // also prints 3\nprintf(\"%d\\n\", 2[a]);\n\n// also prints 3!\na[2] : shortcut of *(a +2)\nby the commutative addition *(a + 2)\n52",
    "quiz": [
     "원문 예제에서 printf(\"%d\\n\", *(p+2));의 출력은?",
     [
@@ -4804,6 +4907,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-53.jpg",
+   "text": "Recursive Type\n● Recursive type: a type that uses itself in its declaration\n\nstruct CharList{\nchar data;\nstruct CharList next; // not legal in C!\n};\n\n• C’s data allocation strategy: each data type should have a fixed\nmaximum size determined at translation time.\n• Use pointer to allow manual dynamic allocation\n\n53",
    "quiz": [
     "struct CharList { char data; struct CharList next; };가 C에서 불법인 이유는?",
     [
@@ -4901,6 +5006,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-54.jpg",
+   "text": "Recursive Type (Cont’d)\nstruct CharListNode{\nchar data;\nstruct CharListNode* next; //now legal in C!\n};\ntypedef struct CharListNode* Charlist;\nCharlist c1 = (Charlist) malloc(sizeof(struct\nCharListNode));\n(*c1).data = ‘a’;\n(*c1).next = 0;\n\n54",
    "quiz": [
     "(*c1).data와 같은 의미의 표현은?",
     [
@@ -4921,7 +5028,9 @@
    "title": "구분 · 타입 동등성",
    "explanation": "\"Type Equivalence\" 단원의 구분 쪽입니다. 두 타입이 \"같은 타입\"인지 판단하는 두 가지 기준(구조적 동등성, 이름 동등성)과 언어별 규칙을 다룹니다.",
    "kind": "structure",
-   "role": "구분 쪽"
+   "role": "구분 쪽",
+   "image": "pages/pl09-55.jpg",
+   "text": "Type Equivalence\n\n55"
   },
   {
    "page": 56,
@@ -5002,6 +5111,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-56.jpg",
+   "text": "Type Equivalence\n● How to decide if two types are the same?\n● Structural equivalence: two data types are the same if they have the\n\nsame structure\n○ Built in the same way using the same type constructors from\nthe same simple types\n● Name equivalence: two types are the same only if they have the\nsame name\n○ Two variables are type equivalent only if their declarations use\nexactly the same type name\n56",
    "quiz": [
     "이름 동등성이 중심으로 삼는 것은?",
     [
@@ -5098,6 +5209,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-57.jpg",
+   "text": "Structural Equivalence\n\n• Example:\n– Rec1 and Rec2 are structurally\nequivalent\n– char X int X char[10]\n– Rec1 and Rec3 are not structurally\nequivalent\n– char X int X char[10] vs.\n– int X char X char[10]\n\n57",
    "quiz": [
     "Rec1과 Rec2의 관계는?",
     [
@@ -5194,6 +5307,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-58.jpg",
+   "text": "Structural Equivalence\n\n• How much information is included in a type under the application of\na type constructor?\n\n• Example: are A1 and A2 structurally equivalent in a language?\n• typedef int A1[10]\n• typedef int A2[20]\n– Yes, if size of the index set is not part of an array type\n– Otherwise, no\n\n58",
    "quiz": [
     "배열 크기가 배열 타입의 일부가 아닌 언어에서 int[10]과 int[20]은?",
     [
@@ -5288,6 +5403,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-59.jpg",
+   "text": "Type Equivalence\n● Similar question arises regarding member names of structures\n● Example: Are these two structures structurally equivalent?\n\n– If structures are considered to be just Cartesian products, then\n\nyes\n– They are typically not considered equivalent in most languages,\nbecause variables of different structures would have to use\ndifferent names to access member data (RecA: .x, RecB:.a)\n59",
    "quiz": [
     "구조체를 단지 데카르트 곱으로 본다면 RecA { char x; int y; }와 RecB { char a; int b; }는?",
     [
@@ -5384,6 +5501,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-60.jpg",
+   "text": "Type Equivalence\n\n• Type names in declarations may or may not be given explicitly\n– In C, variable declarations can use anonymous types\n– Names can also be given right in structs and unions, or by\nusing a typedef\n\n• Structural equivalence when type names are present can be done by\nsimply replacing each name by its associated type expression in its\ndeclaration (except for recursive types)\ntypedef struct { int a; } S;\nS var1; // replace S -> struct { int a; }\n60",
    "quiz": [
     "타입 이름이 있을 때 구조적 동등성을 검사하는 방법은?",
     [
@@ -5479,6 +5598,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-61.jpg",
+   "text": "Name Equivalence\n\n• Name equivalence: two types are the same only if they have the\nsame name\n\n– Easier to implement than structural equivalence, as long as every\ntype has an explicit name\n\n– Two types are equivalent only if they are the same name\n– assume the structure of those two types should be same.\n– Two variables are type equivalent only if their declarations use\nexactly the same type name\n\n61",
    "quiz": [
     "이름 동등성이 구조적 동등성보다 구현이 쉬운 이유는?",
     [
@@ -5575,6 +5696,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-62.jpg",
+   "text": "Type Equivalence (cont’d.)\n\n• Example: in C “style” code\n– Variable a has two names: struct\n\nRecA and RecA (given by the\ntypedef)\n– Variable b has only the name RecB\n(the struct name was left blank)\n– Variable c has no type name at all\n(only an internal name not usable by\nthe programmer)\n\n62",
    "quiz": [
     "변수 a의 타입이 가진 이름은?",
     [
@@ -5671,6 +5794,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-63.jpg",
+   "text": "Type Equivalence\n\n• Example: in C “style” code:\n– a, b, c, and d are structurally\nequivalent?\n– a and c are (pure) name\nequivalent, and not name\nequivalent to b or d?\n– b and d are not (pure) name\nequivalent to any other variable?\n\n● Note: in C\n– Type equivalence: a, b, c\n63",
    "quiz": [
     "실제 C 규칙에서 서로 같은 타입인 변수들은?",
     [
@@ -5767,6 +5892,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-64.jpg",
+   "text": "Type Equivalence Rules in Various Languages\n\n• Ada: Pure form of name equivalence\n\n– Requires type names in variable and function declarations in\nvirtually all cases\n\n• C\n• Name equivalence for struct and union\n• Structural equivalence for everything else\n• typedef does not create a new data type (but just alias).\n• precisely, C uses declaration equivalence (two types are\nequivalent if they are derived from the same type name)\n\n• Pascal\n• Similar to C, except that almost all type constructors lead to new,\ninequivalent types\n\n64",
    "quiz": [
     "C의 typedef int Count;에서 Count는?",
     [
@@ -5863,6 +5990,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-65.jpg",
+   "text": "Type Equivalence (cont’d.)\n\n• Java’s approach is simple:\n– It has no typedefs\n– class and interface declarations implicitly create new type\nnames, and name equivalence is used for these types\n– Arrays use structural equivalence, with special rules for\nestablishing base type (e.g., int, double etc) equivalence\nint[] x = new int[3];\nint[] y = new int[100];\nx = y;\n// OK: both int[]\n\nint[]\np = {1, 2, 3};\nInteger[] q = {1, 2, 3};\np = q;\n// Compilation error\nq = p;\n// Compilation error\n65",
    "quiz": [
     "int[] x = new int[3]; int[] y = new int[100]; x = y;는?",
     [
@@ -5883,7 +6012,9 @@
    "title": "구분 · 타입 검사",
    "explanation": "\"Type Checking\" 단원의 구분 쪽입니다. 프로그램이 타입 측면에서 올바른지 판단하는 과정(타입 추론, 동등성, 호환성)과 암묵적 타입, 겹치는 타입, 공유 연산을 다룹니다.",
    "kind": "structure",
-   "role": "구분 쪽"
+   "role": "구분 쪽",
+   "image": "pages/pl09-66.jpg",
+   "text": "Type Checking\n\n66"
   },
   {
    "page": 67,
@@ -5964,6 +6095,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-67.jpg",
+   "text": "Type Checking\n\n• Type Checking: Determine whether the program is correct in terms of\ndata types.\n\n• Type Inference: Types of expressions\n• Type Equivalence: Are two types the same?\n• Type Compatibility: Relaxing exact type equivalence under\ncertain circumstances\n\n• E.g., using int in double type variable\n67",
    "quiz": [
     "식의 타입을 결정하는 타입 검사 요소는?",
     [
@@ -6067,6 +6200,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-68.jpg",
+   "text": "Example\nlong y;\nfloat x;\ndouble c;\nx = y/2 + c;\n● y is long, 2 is int, so promoted to long, y/2 long\n● c is double, y/2 is long, so promoted to double,\n\ny/2 + c is double\n● x is float, y/2 + c is double, what happens?\n○ C?\nwarning or OK\n○ Java? compile error\n68",
    "quiz": [
     "long y;일 때 y/2의 타입은?",
     [
@@ -6164,6 +6299,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-69.jpg",
+   "text": "Example: C\nstruct RecA {\nint i;\ndouble r;\n};\n\nstruct RecA a;\nint b;\nb = p(a); //type error!\nb = q(a); //legal\n\nint p(struct {int i; double r;} x)\n{ ... }\nstructural equivalent but not name equivalent:\nint q(struct RecA x)\n{ ... }\n69",
    "quiz": [
     "b = p(a);는?",
     [
@@ -6270,6 +6407,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-70.jpg",
+   "text": "Implicit Types\n• Implicit types: types that are not explicitly given in a declaration\n– The type must be inferred by the translator, either from context\n\n•\n\ninformation or from standard rules\nIn C:\n• Note: since C99, implicit int is removed; every declaration needs a\ntype.\n• Older compilers only warn; GCC 14+ and Clang 16+ report an\nerror.\n• unsigned x; long y; are still legal: int is just omitted.\n\n• In Pascal named constants are implicitly typed by the literals they\nrepresent\n\n• Literals are the major example of implicitly typed entities\n• e.g., 10 : int, 3.14: double, ‘A’: int (in C), char in C++ and Java\n\n70",
    "quiz": [
     "C에서 문자 리터럴 'A'의 타입은?",
     [
@@ -6365,6 +6504,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-71.jpg",
+   "text": "Implicit Types\n\n• Implicit types: types that are not explicitly given in a declaration\n\n– The type must be inferred by the translator, either from context\n\n•\n\n•\n•\n\ninformation or from standard rules\nIn C:\n• Variables are implicitly integers if no type is given,\n• Functions implicitly return an integer value if no return type is given\n• Note: since C99, implicit integer (omitting the type in a declaration)\nis illegal. Literals and expressions are still implicitly typed.\nIn Pascal named constants are implicitly typed by the literals they\nrepresent\nLiterals are the major example of implicitly typed entities\n\n• e.g., 10 : int, 3.14: double, ‘A’: int (in C), char in C++ and Java\n\n71",
    "quiz": [
     "C89에서 반환 타입을 생략한 함수 f(x) { … }의 반환 타입은?",
     [
@@ -6468,6 +6609,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-72.jpg",
+   "text": "Overlapping Types and Multiply-Typed Values\n\n• Two types may overlap, with values in common\n• Although preferable for types to be disjoint, this would eliminate the\nability to create subtypes through inheritance in object-oriented\nlanguages\n\n• In C, types like unsigned int and int overlap\n• In C, the literal 0 is a value for every integral type, a value of every\n•\n\npointer type, and represents the null pointer\nIn Java, the literal value null is a value of every reference type\n\n72",
    "quiz": [
     "C에서 리터럴 0의 특징은?",
     [
@@ -6564,6 +6707,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-73.jpg",
+   "text": "Shared Operations\n\n• Each type is associated, usually implicitly, with a set of operations\n• Operations: shared among several types or have the same name as\nother operations that may be different\n\n• Example: + operator can be real addition, integer addition, or set union\n• Integer addition: ALU vs. real addition: FPU\n• Overloaded operation: the same name is used for different operations\n• Translator must decide which operation is meant based on the\ntypes of the operands\n\n73",
    "quiz": [
     "오버로딩된 연산(overloaded operation)의 정의는?",
     [
@@ -6584,7 +6729,9 @@
    "title": "구분 · 타입 변환",
    "explanation": "\"Type Conversion\" 단원의 구분 쪽입니다. 암묵적·명시적 변환, 확대·축소 변환, 캐스트와 업캐스트·다운캐스트, 변환 함수를 다룹니다.",
    "kind": "structure",
-   "role": "구분 쪽"
+   "role": "구분 쪽",
+   "image": "pages/pl09-74.jpg",
+   "text": "Type Conversion\n\n74"
   },
   {
    "page": 75,
@@ -6667,6 +6814,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-75.jpg",
+   "text": "Type Conversion\n\n• Type conversion: converting from one type to another\n– Can be built into the type system to happen automatically\n\n• Implicit conversion (or coercion): inserted by the translator\n• Widening conversion: target data type’s range covers the source type\n• No overflow, but some may lose precision\n//Java\nint i = 16777217; // 2^24 + 1\nfloat f = i;\n// widening, compiles without cast\n// f == 16777216.0 → precision lost\n\n• Narrowing conversion: conversion may involve a loss of data\n75",
    "quiz": [
     "Java에서 int i = 16777217; float f = i;일 때 f의 값은?",
     [
@@ -6772,6 +6921,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-76.jpg",
+   "text": "Type Conversion\n• Narrowing conversion: the target type's range may not cover the\nsource type\n\n• values can overflow or be cut off, as well as lose precision\n• (e.g., double → int, int → byte)\n// C\nint a = 3.7;\nfloat f = 0.1;\nint c = 1e10;\n\n/ / 3 : fraction cut off (toward zero)\n// 0.100000001490116... : precision lost\n// undefined behavior: out of int range\n\n//Java: use explicit casting\nint a = (int) 3.7;\n// 3 : fraction cut off , a =3.7 compilation error\nfloat f = 0.1f;\n// or f = (float) 0.1; f = 0.1 로 하면 compilation error\nint c = (int) 1e10;\n// 2147483647 : out of range, clamped to max\n\n76",
    "quiz": [
     "Java에서 (int) 3.7의 값은?",
     [
@@ -6867,6 +7018,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-77.jpg",
+   "text": "Example\nlong y;\nfloat x;\ndouble c;\nx = y/2 + c;\n\n●\n\ny long, 2 is int, so promoted to long, y/2\nlong.\n\n●\n\nc is double, y/2 is long, so promoted to\ndouble, y/2 + c is double.\n\n●\n\nx Is float, y/2+c is double, what\nhappens?\n○\n\nC?\n\n○\n\nJava?\n\n77",
    "quiz": [
     "y/2 + c(y는 long, c는 double)의 타입은?",
     [
@@ -6969,6 +7122,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-78.jpg",
+   "text": "Type Conversion\n\n• Implicit conversion:\n– Can weaken type checking so that errors may not be caught\n– Can cause unexpected behavior if the conversion is done in a\ndifferent way than the programmer expects\n\n• Explicit conversion (or cast): conversion directives are written into\nthe code\n\n– Conversions are documented in the code\n– Less likelihood of unexpected behavior\n– Makes it easier for the translator to resolve overloading\n78",
    "quiz": [
     "C에서 int i = -1; unsigned u = 1;일 때 i < u의 결과는?",
     [
@@ -7075,6 +7230,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-79.jpg",
+   "text": "Type Conversion (cont’d.)\n\n• Example In C++:\ndouble max (int, double);\ndouble max (double, int);\nmax (2, 3)\n\n– Ambiguous, because of the possible implicit conversions from int\nto double on either first or second parameter\n\n• Java only permits widening implicit conversions for arithmetic types\n• C++ emits warning messages for narrowing\n79",
    "quiz": [
     "C++에서 f(int, double)과 f(double, int)가 있을 때 f(1, 2)는?",
     [
@@ -7179,6 +7336,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-80.jpg",
+   "text": "Type Conversion\n\n• Explicit casts need to be somewhat restricted\n– Often to simple types, or just arithmetic types\n\n• If casts are permitted for structured types (e.g., struct, record), they\nmust have identical sizes in memory\n\n– Allows translation to reinterpret the memory as a different type\n– causes memory corruption or runtime error\n\n• Example: in C, malloc and free functions are declared using a\ngeneric pointer or anonymous pointer type void*\n\n• Object-oriented languages allow conversions from subtypes to\nsupertypes (upcasting) and back (downcasting) in some cases\n80",
    "quiz": [
     "C의 malloc이 돌려주는 포인터 타입은?",
     [
@@ -7282,6 +7441,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-81.jpg",
+   "text": "Example: Java\n● Implicit conversion:\n○\n\n○\n\nRepresentation change\n■ type promotion, e.g., int to double\nNo representation change (객체는 그대로, 참조 타입만 바뀜)\nSubA s = new SubA();\n■ upcasting (subtype to super type)\nA a = s; // implicit upcasting\n\n● Explicit conversion:\n○\n\n○\n\nRepresentation change\ndouble x = 1.5; // x: 0x3FF8000000000000 (64bits)\nint y = (int)x; // y: 0x00000001(32비트)\nNo representation change\nA a = new SubA();\n■ downcasting (super type to subtype) SubA s = (SubA) a;\n\n81\n// 객체는 그대로, 참조의 타입만 바뀜",
    "quiz": [
     "Java의 int → double 승격은 어디에 속하는가?",
     [
@@ -7379,6 +7540,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-82.jpg",
+   "text": "Java\n\nSubA extends A\n\nA\n\nx\n\nSub A\n\ny\n\nSubA s = new SubA();\nA a = s;\n// OK: implicit upcasting\nA a = new SubA();\na.x;\na.y;\na.getClass();\n((SubA) a).y;\n\n// OK: A에 x가 있음\n// 컴파일 에러: 컴파일러는 a를 A로만 봄\n// class SubA: 실행 중 실제 객체 타입\n// OK: 캐스트로 SubA로 보겠다고 알려 줌, 실행 중 검사 통과\n\nA a = new A();\nSubA s = (SubA) a; // explicit downcasting, 컴파일 OK,\n// runtime에 ClassCastException error\n82",
    "quiz": [
     "A a = new SubA(); 다음 a.y(y는 SubA에만 있음)는?",
     [
@@ -7490,6 +7653,8 @@
     "label": "원문 오류 · Java API 이름",
     "ask": "강의 자료의 오타로 보입니다. 시험 답안에는 Integer.parseInt를 쓰는 것이 안전합니다."
    },
+   "image": "pages/pl09-83.jpg",
+   "text": "Type Conversion\n• Alternative to casts is to use predefined or library functions to perform\nconversions (safe)\n– Ada uses attribute functions to allow conversions\n– Example: Integer 'Image(X)\n– Integer: type, Image: attribute, convert integer to string\nrepresentation\n– Java contains functions e.g.\n– Integer.toString to convert from int to String\n– String.parseInt to convert from String to int\n\n• Undiscriminated unions can hold values of different types\n\n– With no discriminant or tag, a translator cannot distinguish values of\none type from another\n– No type safety\n\n83",
    "quiz": [
     "Java에서 String을 int로 바꾸는 올바른 메서드는?",
     [
@@ -7510,7 +7675,9 @@
    "title": "구분 · 다형적 타입 검사",
    "explanation": "\"Polymorphic Type Checking\" 단원의 구분 쪽입니다. 선언이 없어도 이름의 사용을 모아 타입을 추론하는 Hindley-Milner 타입 검사를 다룹니다.",
    "kind": "structure",
-   "role": "구분 쪽"
+   "role": "구분 쪽",
+   "image": "pages/pl09-84.jpg",
+   "text": "Polymorphic Type Checking\n\n84"
   },
   {
    "page": 85,
@@ -7593,6 +7760,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-85.jpg",
+   "text": "Polymorphic Type Checking\n\n• Most statically typed languages required that explicit type\ninformation be given for all names in declarations\n• It is possible to determine types of names without explicit\ndeclaration:\n\n– Can collect information on the uses of a name and infer the type\nfrom the set of all uses\n– Can declare a type error because some of the uses are\nincompatible with others\n\n• This type inference and type checking is called Hindley-Milner\ntype checking\n\n• Functional PL (ML, Haskell)\n\n85",
    "quiz": [
     "Hindley-Milner 타입 검사는 선언 없는 이름의 타입을 어떻게 정하는가?",
     [
@@ -7688,6 +7857,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-86.jpg",
+   "text": "Conventional Type Checking\n\n• Example in C code: a[i] + i\n– a must be declared as an\n\n•\n\narray of integers, and i as\nan integer, giving an integer\nresult\nType checker starts out with this\nsyntax tree:\n\n86",
    "quiz": [
     "a[i] + i의 문법 트리에서 루트 노드는?",
     [
@@ -7784,6 +7955,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-87.jpg",
+   "text": "Conventional Type Checking (cont’d)\n\n• Types of the names (leaf nodes)\nare filled in from declarations\nint a[10];\nint i;\n...\na[i] + i\n\n87",
    "quiz": [
     "일반적인 타입 검사에서 잎 노드의 타입은 어디서 가져오는가?",
     [
@@ -7887,6 +8060,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-88.jpg",
+   "text": "Conventional Type Checking (cont’d)\n\n• Type checker now checks the\nsubscript node (labeled [])\n\n– Left operand must be an\narray\n– Right operand must be an\nint\n\n– Inferred type of the subscript\nnode is the component type\nof the array - int\n\n88",
    "quiz": [
     "첨자 노드 [ ]의 왼쪽 피연산자 조건은?",
     [
@@ -7983,6 +8158,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-89.jpg",
+   "text": "Conventional Type Checking (cont’d)\n• + node type is checked\n– Both operands must have\nthe same type\n– This type must have a +\noperation\n– Result is the type of the\noperands - int\n\n89",
    "quiz": [
     "원문의 + 노드 검사 조건으로 옳은 것은?",
     [
@@ -8078,6 +8255,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-90.jpg",
+   "text": "Hindley-Milner Type Checking\n\n• Example:\na[i] + i\n– What if the declarations of a\nand i were missing?\n\n• Type checker would first assign\ntype variables to all names that\ndo not yet have types\n\n90",
    "quiz": [
     "선언이 없을 때 Hindley-Milner 검사기가 처음 하는 일은?",
     [
@@ -8174,6 +8353,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-91.jpg",
+   "text": "Hindley-Milner Type Checking (cont’d)\n\n• Type checker now checks\nthe subscript node\n– Infers that a must be\nan array\n– Infers that i must\nhave an int\n– Replaces β with int\nin the entire tree\n\n91",
    "quiz": [
     "첨자 노드 검사 후 a의 타입은?",
     [
@@ -8269,6 +8450,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-92.jpg",
+   "text": "Hindley-Milner Type Checking (cont’d)\n\n• Type checker now\nconcludes that the\nsubscript node is type\ncorrect and has the type γ\n\n92",
    "quiz": [
     "이 단계에서 첨자 노드 a[i]의 타입은?",
     [
@@ -8364,6 +8547,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-93.jpg",
+   "text": "Hindley-Milner Type Checking (cont’d)\n• + node type is checked\n– Concludes that γ must\nbe type int\n– Replaces γ\neverywhere by int\n\n93",
    "quiz": [
     "+ 노드 검사에서 결정되는 것은?",
     [
@@ -8460,6 +8645,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-94.jpg",
+   "text": "Hindley-Milner Type Checking (cont’d)\n\n• Unification: The process of changing type expressions for variables to\nensure type checking succeeds. It's a form of pattern matching.\n\n• Instantiation: When a type variable (e.g., α, β) is replaced by an\nactual type (e.g., int), all instances of that variable must be updated.\n\n• Example: To check array of α against array of β, the system must unify\nthem. It determines α == β and replaces all β with α everywhere it\noccurs.\n\n94",
    "quiz": [
     "array of α와 array of int를 단일화하면 무엇을 얻는가?",
     [
@@ -8555,6 +8742,8 @@
      ]
     ]
    ],
+   "image": "pages/pl09-95.jpg",
+   "text": "Hindley-Milner Type Checking (cont’d)\n\n• Simplified Typing: Reduces the amount of explicit type information\nthe programmer must write.\n\n• Strong Consistency: Allows types to remain as general as possible\nwhile still being strongly checked for consistency.\n\n• Implicit Polymorphism: Automatically implements powerful\nparametric polymorphism.\n\n• Example: The type Array of α represents an infinite set of types\n(e.g., Array of int, Array of String, etc.).\n\n95",
    "quiz": [
     "ML에서 len : 'a list -> int가 뜻하는 것은?",
     [
@@ -8575,7 +8764,9 @@
    "title": "참고문헌",
    "explanation": "[1] Programming Languages: Principles and Practice, Louden & Lambert, 3rd edition, Course Technology. 이 장의 그림(Figure 8.8~8.15)과 예제는 이 교재 8장을 바탕으로 합니다. 학습 내용과 퀴즈는 없습니다.",
    "kind": "structure",
-   "role": "참고문헌"
+   "role": "참고문헌",
+   "image": "pages/pl09-96.jpg",
+   "text": "References\n[1] Programming languages principles and practice, Louden & Lambert, 3rd\nedition, Course Technology\n\n96"
   }
  ]
 });

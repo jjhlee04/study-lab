@@ -224,6 +224,7 @@ Page-level Explanation / Source / Quiz links appear beside the page title and at
 - `course-study.js`: 한 쪽에 여러 퀴즈(`page.quizzes`)를 지원합니다. 답은 `quizAnswers['v2:번호']`에 저장되며, 이전 PL 09 단일 퀴즈의 `answer` 기록은 문제가 바뀌어 채점에 쓰지 않습니다(학습 완료 표시는 유지). 다른 과목은 기존 단일 퀴즈 방식 그대로입니다.
 - `exam.js`: 추가 퀴즈를 `pl-mc-pl09-쪽-q2/-q3` id로 모의고사 문항 은행과 오답 노트에 포함합니다.
 - 예제의 Java·C·C++ 결과와 오류 문구는 javac/gcc/g++로 직접 확인했습니다(Ada·ML 출력은 구현마다 형식이 다를 수 있다고 표시).
+- 원문(2026-11-11): 영문 원문 PDF를 `dist/original/PL-09-Types.pdf`로 포함하고, 쪽마다 원문 이미지(`dist/pages/pl09-NN.jpg`, 1200px)와 검색용 추출 텍스트를 PL 07·08과 같은 방식으로 표시합니다. 직접 PDF를 등록하던 방식(localSource)은 없앴습니다.
 
 ## Anki 방식 카드 복습 (FSRS, 2026-11-10)
 
