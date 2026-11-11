@@ -106,7 +106,7 @@ async function importAll(file,mode){const txt=await file.text();let v;try{v=JSON
   let n=0;for(const [k,raw] of Object.entries(v.keys)){if(!BACKUP_KEYS(k)||typeof raw!=='string')continue;if(mode==='replace'||localStorage.getItem(k)===null)localStorage.setItem(k,raw);else{try{localStorage.setItem(k,JSON.stringify(deepMerge(JSON.parse(localStorage.getItem(k)),JSON.parse(raw))));}catch{continue;}}n++;}return n;}
 function openSettings(){const d=dialog('cv-settings','편의 설정',`
 <section><h3>필기 도구 막대</h3><div class="cv-radios">${[['auto','자동 (PC는 상단 필기 버튼으로 열기, 펜·터치 기기는 항상 표시)'],['button','항상 버튼으로 열기'],['always','항상 표시']].map(([k,t])=>`<label><input type="radio" name="cv-tb" value="${k}" ${st.toolbar===k?'checked':''}> ${t}</label>`).join('')}</div>
-<p class="cv-small">현재 기기: ${isPC()?'마우스(PC)':'펜·터치'} · 손가락 필기 등 필기 세부 설정은 <button type="button" class="s-btn ghost" id="cv-nb-settings">필기 설정 열기</button></p></section>
+<p class="cv-small">현재 기기: ${isPC()?'마우스(PC)':'펜·터치'} · 필기 도구 숨기기 등 세부 설정은 <button type="button" class="s-btn ghost" id="cv-nb-settings">필기 설정 열기</button></p></section>
 <section><h3>화면</h3><div class="cv-radios">${[['auto','기기 설정 따름'],['light','밝게'],['dark','어둡게']].map(([k,t])=>`<label><input type="radio" name="cv-th" value="${k}" ${st.theme===k?'checked':''}> ${t}</label>`).join('')}</div><p class="cv-small">어둡게에서도 강의 원문 이미지는 원래 색으로 보입니다.</p></section>
 <section><h3>전체 백업 · 복원</h3><p class="cv-small">진도, 교재 메모, 퀴즈·모의고사 기록, 복습 일정, 북마크, 필기, 설정을 파일 하나로 저장합니다. 녹음 파일과 직접 등록한 PDF는 용량 때문에 포함하지 않습니다. 다른 기기나 새 주소에서 불러와 이어서 쓸 수 있습니다.</p>
 <div class="s-actions"><button type="button" class="s-btn teal" id="cv-export">전체 백업 파일 받기</button></div>

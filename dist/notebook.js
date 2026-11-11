@@ -1,12 +1,12 @@
 (function(){
 'use strict';
 const NS='http://www.w3.org/2000/svg',KEY='study-handwriting-v1',SIDE='study-sidebar-v1';
-let fingerEnabled=true,eraseTimer=null,eraseReady=false,erasePoint=null;
-// Finger drawing off: fingers scroll natively (touch-action pan, with momentum); the pencil still
-// draws because its touches are cancelled before the browser can start a pan.
+let eraseTimer=null,eraseReady=false,erasePoint=null;
+// Fingers never draw: on the ink layer they scroll and pinch-zoom natively (with momentum) in every
+// mode. Only the pencil and the mouse draw; pencil touches are cancelled so the browser never pans them.
 const stylusTouch=ev=>[...ev.changedTouches,...ev.touches].some(t=>t.touchType==='stylus');
 function blockPenPan(ev){if(mode==='move'||!ev.cancelable)return;if(pointer!==null||stylusTouch(ev))ev.preventDefault();}
-function touchMode(){return mode==='move'?'auto':fingerEnabled?'none':'pan-x pan-y pinch-zoom';}
+function touchMode(){return mode==='move'?'auto':'pan-x pan-y pinch-zoom';}
 let mode='move',target=null,svg=null,pageKey='',pages={},side={library:false,unix:false},active=null,pointer=null,resize=null,frame=0;
 try{const v=JSON.parse(localStorage.getItem(KEY));if(v?.version===1&&v.pages&&typeof v.pages==='object')pages=v.pages;}catch{}
 try{const v=JSON.parse(localStorage.getItem(SIDE));if(v)side={...side,...v};}catch{}
@@ -31,7 +31,7 @@ function draw(){frame=0;if(!svg||!target)return;svg.setAttribute('width',String(
 function scheduleDraw(){if(!frame)frame=requestAnimationFrame(draw);}
 function dist(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=dx||dy?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy))):0;return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
 function erase(ev){const r=target.getBoundingClientRect(),p={x:(ev.clientX-r.left)/scale(),y:(ev.clientY-r.top)/scale()},before=pages[pageKey]||[];const after=before.filter(stroke=>{const ps=absolute(stroke);if(ps.length===1)return Math.hypot(ps[0].x-p.x,ps[0].y-p.y)>16/scale();return !ps.some((b,i)=>i&&dist(p,ps[i-1],b)<=16/scale());});if(after.length!==before.length){pages[pageKey]=after;scheduleDraw();persist();}}
-function down(ev){if(mode!=='move'&&ev.pointerType==='touch'&&!fingerEnabled)return;if(mode==='move'||ev.button!==0||pointer!==null)return;ev.preventDefault();pointer=ev.pointerId;svg.setPointerCapture(pointer);if(mode==='eraser'){erasePoint={clientX:ev.clientX,clientY:ev.clientY};eraseReady=false;eraseTimer=setTimeout(()=>{eraseTimer=null;if(pointer!==null&&mode==='eraser'){eraseReady=true;erase(erasePoint);}},100);return;}const anchor=anchorFor(ev.clientX,ev.clientY),r=anchor.element.getBoundingClientRect();active={id:crypto.randomUUID(),anchor:anchor.index,points:[point(ev,r)]};pages[pageKey]??=[];pages[pageKey].push(active);scheduleDraw();}
+function down(ev){if(ev.pointerType==='touch')return;if(mode==='move'||ev.button!==0||pointer!==null)return;ev.preventDefault();pointer=ev.pointerId;svg.setPointerCapture(pointer);if(mode==='eraser'){erasePoint={clientX:ev.clientX,clientY:ev.clientY};eraseReady=false;eraseTimer=setTimeout(()=>{eraseTimer=null;if(pointer!==null&&mode==='eraser'){eraseReady=true;erase(erasePoint);}},100);return;}const anchor=anchorFor(ev.clientX,ev.clientY),r=anchor.element.getBoundingClientRect();active={id:crypto.randomUUID(),anchor:anchor.index,points:[point(ev,r)]};pages[pageKey]??=[];pages[pageKey].push(active);scheduleDraw();}
 function move(ev){if(pointer!==ev.pointerId)return;ev.preventDefault();if(mode==='eraser'){erasePoint={clientX:ev.clientX,clientY:ev.clientY};if(eraseReady)erase(erasePoint);return;}if(!active)return;const samples=ev.getCoalescedEvents?.()||[ev];for(const e of samples.length?samples:[ev]){const p=point(e,rectFor(active)),last=active.points.at(-1);if(Math.hypot(p.x-last.x,p.y-last.y)>.0005)active.points.push(p);}scheduleDraw();}
 function finish(ev){if(ev&&pointer!==ev.pointerId)return;clearTimeout(eraseTimer);eraseTimer=null;eraseReady=false;erasePoint=null;if(pointer!==null){if(svg?.hasPointerCapture(pointer))svg.releasePointerCapture(pointer);pointer=null;if(active){active=null;persist();}}}
 function keyFor(){if(isLibrary()){const active=window.ContinuousReader?.active;if(active?.isConnected)return `course:${location.hash.split('/')[2]}:${document.querySelector('#cs-chapter').value}:${active.dataset.page}`;const ch=document.querySelector('#cs-chapter'),p=document.querySelector('#cs-page');if(!ch||!p)return null;const course=location.hash.split('/')[2];return `course:${course}:${ch.value}:${p.value}`;}const match=location.hash.match(/^#(w\d+)\/(\d+)\/(\w+)/);return match?`unix:${match[1]}:${match[2]}:${match[3]}`:null;}
@@ -40,5 +40,5 @@ let pending=false;function scheduleRefresh(){if(pending)return;pending=true;requ
 for(const id of ['school-app','panel']){const el=document.getElementById(id);if(el)new MutationObserver(scheduleRefresh).observe(el,{childList:true});}
 new MutationObserver(applySide).observe(document.body,{attributes:true,attributeFilter:['class']});
 window.addEventListener('hashchange',scheduleRefresh);window.addEventListener('resize',()=>{applySide();scheduleDraw();});window.addEventListener('pagehide',()=>{finish();});document.addEventListener('toggle',scheduleDraw,true);document.addEventListener('fullscreenchange',scheduleDraw);document.addEventListener('keydown',ev=>{if(ev.key==='Escape')setMode('move');});
-window.Notebook={refresh:scheduleRefresh,setMode,getMode:()=>mode,getTarget:()=>target,getPageKey:()=>pageKey||'library:general',setFingerEnabled:value=>{finish();fingerEnabled=!!value;if(svg)svg.style.touchAction=touchMode();}};refresh();
+window.Notebook={refresh:scheduleRefresh,setMode,getMode:()=>mode,getTarget:()=>target,getPageKey:()=>pageKey||'library:general',setFingerEnabled:()=>{}};refresh();
 })();
