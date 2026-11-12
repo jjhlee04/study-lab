@@ -250,3 +250,10 @@ Page-level Explanation / Source / Quiz links appear beside the page title and at
 - 자료 검토 21쪽: 원문 오타 의심을 원문/확인한 설명으로 분리(예: 20쪽 Σ 첨자 s∈E, 31쪽 n−k failures, 34쪽 all different·n=22 값 0.475, 43쪽 E∩(F∪F̄), 50쪽 0.125, 53쪽 분모 Πq(wi), 59쪽 (p+q)^(n−1), 61쪽 n·(1/n)=1, 65쪽 3(n+2)/4, 73쪽 X1부터, 74쪽 V(X)/r^2).
 - 카드: 75장(`dm07_cards.py` → `dist/recall-cards-dm07.js`). 플래너에서 배운 범위로 지정한 쪽의 카드만 나옵니다.
 - `course-study.js`: 예제 블록에 `codeLabel`(예: 풀이·의사코드)을 지정할 수 있습니다.
+
+## 원문 모드 (2026-11-12)
+
+- 이어 읽기에서 '원문'을 고르면 각 쪽의 원본 이미지만 PDF처럼 이어서 보입니다(제목·PDF 링크·추출 텍스트 숨김). `dist/source-mode.js`, `dist/source-mode.css`.
+- 오른쪽 아래에 '현재 쪽 / 전체 쪽'(누르면 쪽 이동)과 [설명][퀴즈]가 있고, 누르면 그 쪽의 설명·퀴즈가 패널(넓은 화면 오른쪽, 좁은 화면 아래)로 열립니다. 원문 위치는 유지되고, 다른 쪽으로 스크롤하면 '지금 보는 n쪽으로 바꾸기'가 나옵니다. 패널에서 푼 퀴즈는 '교재 화면으로'를 누를 때 교재 화면에 반영됩니다.
+- 교재 화면(설명·실험·문제)에서도 오른쪽 아래에 쪽 번호와 [원문 보기]를 보여 줍니다.
+- 원문 이미지 위 필기는 이미지 자체를 기준(anchor −2)으로 저장해, 원문 모드와 한 쪽 보기의 원문 탭에서 같은 자리에 보입니다. `continuous-reader.js`는 `ContinuousReader.renderPage/jump/select/view/page`와 `continuous-reader-ready/page/view` 이벤트를 제공합니다.

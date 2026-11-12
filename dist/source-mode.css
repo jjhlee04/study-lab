@@ -1,0 +1,44 @@
+/* 원문 모드: 쪽 이미지만 PDF처럼 이어 보기 */
+.cr-source-mode .cr-sheet{padding:0;margin:0 0 12px;border:0;min-height:0}
+.cr-source-mode .cr-sheet .cs-lesson{padding:0;margin:0;border:0;box-shadow:none;background:transparent}
+.cr-source-mode .cr-sheet .cs-lesson>:not(.cs-view-panel):not(#notebook-ink):not(.cr-ink-preview){display:none!important}
+.cr-source-mode .cr-sheet .cs-view-panel{min-height:0;padding:0;margin:0}
+.cr-source-mode .cr-sheet .cs-view-panel>:not(.cs-source){display:none!important}
+.cr-source-mode .cr-sheet .cs-source{margin:0;padding:0;border:0;background:transparent}
+.cr-source-mode .cr-sheet .cs-source>:not(a):not([id$="cs-upload-preview"]){display:none!important}
+.cr-source-mode .cr-sheet .cs-source>a{display:block;pointer-events:none;-webkit-touch-callout:none}
+.cr-source-mode .cr-sheet .cs-source img{display:block;width:100%;max-width:none;height:auto;aspect-ratio:auto 4/3;margin:0;border:1px solid #d3dce4;border-radius:4px;background:#fff;box-shadow:0 1px 4px #12283d14}
+
+/* 오른쪽 아래: 현재 쪽 / 전체 쪽 + 설명·퀴즈 */
+#sr-pager{position:fixed;right:12px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:66;display:flex;align-items:center;gap:4px;padding:4px;background:#fff;border:1px solid #c3d3de;border-radius:12px;box-shadow:0 3px 14px #12283d26;font:600 15px/1.2 "Pretendard Variable","Malgun Gothic",sans-serif;color:#14304c}
+#sr-pager[hidden],#sr-pager [hidden],#sr-panel[hidden],#sr-panel [hidden]{display:none!important}
+#sr-pager button{font:inherit;min-height:40px;padding:6px 11px;border:1px solid transparent;border-radius:8px;background:#eef5f8;color:inherit;cursor:pointer;touch-action:manipulation}
+#sr-pager button:disabled{opacity:.4;cursor:default}
+#sr-pager .sr-count{background:transparent;font-variant-numeric:tabular-nums;min-width:68px}
+#sr-pager .sr-jump{display:flex;gap:4px}
+#sr-pager .sr-jump input{width:64px;font:inherit;padding:6px;border:1px solid #9fb6c6;border-radius:8px}
+
+/* 설명·퀴즈 패널: 넓은 화면은 오른쪽, 좁은 화면은 아래 */
+#sr-panel{position:fixed;z-index:64;display:flex;flex-direction:column;background:#fff;color:#14304c;border:1px solid #c3d3de;box-shadow:0 -4px 24px #12283d2e;left:0;right:0;bottom:0;max-height:62dvh;border-radius:14px 14px 0 0}
+#sr-panel .sr-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #dbe5ec;flex-wrap:wrap}
+#sr-panel .sr-title{flex:1 1 180px;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sr-panel .sr-tabs{display:flex;gap:4px}
+#sr-panel button{font:600 15px/1.2 "Pretendard Variable","Malgun Gothic",sans-serif;min-height:40px;padding:6px 12px;border:1px solid #c3d3de;border-radius:8px;background:#f3f8fb;color:#14304c;cursor:pointer;touch-action:manipulation}
+#sr-panel .sr-tabs [aria-selected=true]{background:#e2f3f1;border-color:#61a9ae;color:#006b70}
+#sr-panel button:disabled{opacity:.4;cursor:default}
+#sr-panel .sr-follow{margin:8px 12px 0;align-self:flex-start;background:#fff8e6;border-color:#e2c27a}
+#sr-panel .sr-body{flex:1;overflow:auto;overscroll-behavior:contain;padding:4px 16px 16px;-webkit-overflow-scrolling:touch}
+#sr-panel .sr-foot{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 64px 8px 12px;border-top:1px solid #dbe5ec;font-size:14px}
+#sr-panel .sr-pdf{color:#006b70}
+#sr-panel .cr-sheet{border:0;padding:0;margin:0;min-height:0}
+#sr-panel .cs-lesson{padding:0;margin:0;border:0;box-shadow:none}
+#sr-panel .cs-lesson>:not(.cs-view-panel),#sr-panel .reader-page-links{display:none!important}
+@media (min-width:1000px){
+  #sr-panel{left:auto;top:0;right:0;bottom:0;width:min(460px,40vw);max-height:none;border-radius:0;box-shadow:-4px 0 24px #12283d26}
+  body.sr-panel-open .continuous-reader{margin-right:min(460px,40vw)}
+}
+@media (max-width:999px){body.sr-panel-open .continuous-reader{padding-bottom:62dvh}}
+
+:root[data-theme=dark] :is(#sr-pager,#sr-panel){background:#1d242b;color:#e4ecf2;border-color:#3a4855}
+:root[data-theme=dark] .cr-source-mode .cr-sheet .cs-source img{border-color:#3a4855}
+:root[data-theme=dark] :is(#sr-pager,#sr-panel) button{background:#26313b;color:#e4ecf2;border-color:#3a4855}
