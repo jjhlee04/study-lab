@@ -26,7 +26,6 @@
 #sr-panel button{font:600 15px/1.2 "Pretendard Variable","Malgun Gothic",sans-serif;min-height:40px;padding:6px 12px;border:1px solid #c3d3de;border-radius:8px;background:#f3f8fb;color:#14304c;cursor:pointer;touch-action:manipulation}
 #sr-panel .sr-tabs [aria-selected=true]{background:#e2f3f1;border-color:#61a9ae;color:#006b70}
 #sr-panel button:disabled{opacity:.4;cursor:default}
-#sr-panel .sr-follow{margin:8px 12px 0;align-self:flex-start;background:#fff8e6;border-color:#e2c27a}
 #sr-panel .sr-body{flex:1;overflow:auto;overscroll-behavior:contain;padding:4px 16px 16px;-webkit-overflow-scrolling:touch}
 #sr-panel .sr-foot{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 64px 8px 12px;border-top:1px solid #dbe5ec;font-size:14px}
 #sr-panel .sr-pdf{color:#006b70}

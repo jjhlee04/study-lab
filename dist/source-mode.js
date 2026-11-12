@@ -6,10 +6,10 @@
 const pager=document.createElement('div');pager.id='sr-pager';pager.hidden=true;
 pager.innerHTML='<button type="button" class="sr-count" title="눌러서 쪽 이동"></button><form class="sr-jump" hidden><input type="number" inputmode="numeric" min="1" aria-label="이동할 쪽 번호"><button type="submit">이동</button></form><button type="button" data-sr="explain">설명</button><button type="button" data-sr="quiz">퀴즈</button><button type="button" data-sr="source">원문 보기</button>';
 const panel=document.createElement('aside');panel.id='sr-panel';panel.hidden=true;panel.setAttribute('aria-label','이 쪽의 설명과 퀴즈');
-panel.innerHTML='<div class="sr-head"><strong class="sr-title"></strong><div class="sr-tabs" role="tablist"><button type="button" role="tab" data-tab="explain">설명</button><button type="button" role="tab" data-tab="quiz">퀴즈</button></div><button type="button" class="sr-close">닫기</button></div><button type="button" class="sr-follow" hidden></button><div class="sr-body"></div><div class="sr-foot"><a class="sr-pdf" target="_blank" rel="noopener">원본 PDF 파일 열기 ↗</a><button type="button" class="sr-book">교재 화면으로</button></div>';
+panel.innerHTML='<div class="sr-head"><strong class="sr-title"></strong><div class="sr-tabs" role="tablist"><button type="button" role="tab" data-tab="explain">설명</button><button type="button" role="tab" data-tab="quiz">퀴즈</button></div><button type="button" class="sr-close">닫기</button></div><div class="sr-body"></div><div class="sr-foot"><a class="sr-pdf" target="_blank" rel="noopener">원본 PDF 파일 열기 ↗</a><button type="button" class="sr-book">교재 화면으로</button></div>';
 document.body.append(pager,panel);
 const $=(root,s)=>root.querySelector(s),body=$(panel,'.sr-body');
-let CR=null,page=1,tab='explain',shown=0,dirty=false;
+let CR=null,page=1,tab='explain',want='explain',shown=0,dirty=false,follow=null;
 
 const reader=()=>document.querySelector('.continuous-reader');
 const ready=()=>{const r=reader();return !!(CR&&CR.count&&r&&r.getClientRects().length&&CR.sheet(1)?.isConnected&&/^#\/course\/[^/]+\/textbook(\/|$)/.test(location.hash));};
@@ -24,14 +24,13 @@ function update(){
   for(const k of ['explain','quiz'])$(pager,`[data-sr=${k}]`).hidden=!source;
   $(pager,'[data-sr=quiz]').disabled=!hasQuiz(page);$(pager,'[data-sr=source]').hidden=source;
   if(!source&&!panel.hidden)close();
-  const follow=$(panel,'.sr-follow');follow.hidden=panel.hidden||page===shown;follow.textContent=`지금 보는 ${page}쪽으로 바꾸기`;
 }
 function render(n){
   const copy=CR.renderPage(n,'sp-');body.replaceChildren(copy.sheet);const views=copy.bind();
   shown=n;const heading=copy.lesson.querySelector('.cs-pageheading h2,.cs-pageheading h3');
   $(panel,'.sr-title').textContent=`${n} / ${CR.count}쪽 · ${heading?heading.textContent.trim():''}`;
   const ch=chapter();const pdf=$(panel,'.sr-pdf');pdf.hidden=!ch?.url;if(ch?.url)pdf.href=ch.url+'#page='+n;
-  panel.views=views;show(tab);
+  panel.views=views;show(want);
 }
 function show(t){
   if(t==='quiz'&&!hasQuiz(shown))t='explain';tab=t;
@@ -45,8 +44,8 @@ function keepPlace(change){
   const r=s.getBoundingClientRect(),f=r.height?(0-r.top)/r.height:0;change();
   const r2=s.getBoundingClientRect();window.scrollBy(0,r2.top+f*r2.height);
 }
-function open(t){tab=t;keepPlace(()=>{panel.hidden=false;document.body.classList.add('sr-panel-open');});render(page);update();$(panel,'.sr-close').focus({preventScroll:true});}
-function close(){if(panel.hidden)return;keepPlace(()=>{panel.hidden=true;document.body.classList.remove('sr-panel-open');});body.replaceChildren();panel.views=null;shown=0;pager.hidden=!ready();}
+function open(t){tab=want=t;keepPlace(()=>{panel.hidden=false;document.body.classList.add('sr-panel-open');});render(page);update();$(panel,'.sr-close').focus({preventScroll:true});}
+function close(){clearTimeout(follow);if(panel.hidden)return;keepPlace(()=>{panel.hidden=true;document.body.classList.remove('sr-panel-open');});body.replaceChildren();panel.views=null;shown=0;pager.hidden=!ready();}
 function toBook(){
   close();if(!ready())return;
   const reload=dirty;dirty=false;
@@ -67,16 +66,15 @@ $(jumpForm,'input').addEventListener('blur',()=>setTimeout(endJump,150));
 $(jumpForm,'input').addEventListener('keydown',e=>{if(e.key==='Escape')endJump();});
 panel.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
-  if(b.dataset.tab)show(b.dataset.tab);
+  if(b.dataset.tab){want=b.dataset.tab;show(want);}
   else if(b.classList.contains('sr-close'))close();
-  else if(b.classList.contains('sr-follow')){render(page);update();}
   else if(b.classList.contains('sr-book'))toBook();
 });
 panel.addEventListener('submit',()=>{dirty=true;},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden)close();});
 
 addEventListener('continuous-reader-ready',()=>{CR=window.ContinuousReader;page=CR.page();close();update();});
-addEventListener('continuous-reader-page',e=>{page=e.detail.page;update();});
+addEventListener('continuous-reader-page',e=>{page=e.detail.page;update();clearTimeout(follow);if(!panel.hidden&&page!==shown)follow=setTimeout(()=>{if(!panel.hidden&&ready()&&page!==shown)render(page);},250);});
 addEventListener('continuous-reader-view',()=>{if(CR?.view()!=='source')dirty=false;update();});
 new MutationObserver(()=>{if(!reader())update();}).observe(document.getElementById('school-app')||document.body,{childList:true});
 addEventListener('hashchange',()=>{update();setTimeout(update,300);});
