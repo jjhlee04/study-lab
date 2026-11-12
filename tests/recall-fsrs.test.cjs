@@ -8,7 +8,7 @@ const t0 = new Date('2026-11-10T10:00:00').getTime();
 
 test('preview/apply follows ts-fsrs exactly for the same review sequence', () => {
   const ref = F.fsrs({request_retention: 0.9, maximum_interval: 36500, enable_fuzz: true, enable_short_term: true,
-    learning_steps: ['1m', '10m'], relearning_steps: ['10m']});
+    learning_steps: ['10m'], relearning_steps: ['10m']});
   let card = F.createEmptyCard(new Date(t0)), record, now = t0;
   for (const rating of [3, 3, 3, 1, 3, 4, 2, 3]) {
     const choice = R.preview(record, {retention: 0.9}, now).find(c => c.rating === rating);
@@ -22,15 +22,16 @@ test('preview/apply follows ts-fsrs exactly for the same review sequence', () =>
   }
 });
 
-test('new cards use Anki-like learning steps (1 min, 10 min) and Easy graduates', () => {
+test('new cards: a miss comes back after 10 minutes, Good/Easy graduate to review days later', () => {
   const p = R.preview(undefined, {}, t0);
   assert.deepEqual(p.map(x => x.key), ['again', 'hard', 'good', 'easy']);
-  assert.equal(p[0].card.due - t0, 1 * MIN);
-  assert.equal(p[2].card.due - t0, 10 * MIN);
-  assert.equal(p[2].card.state, 1);           // still learning
+  assert.equal(p[0].card.due - t0, 10 * MIN);
+  assert.equal(p[0].card.state, 1);           // Again: learning, 10 min
+  assert.equal(p[2].card.state, 2);           // Good: review
+  assert.ok(p[2].card.due - t0 >= DAY);
   assert.equal(p[3].card.state, 2);           // Easy: review
-  assert.ok(p[3].card.due - t0 >= DAY);
-  assert.equal(p[0].after, '1분');
+  assert.ok(p[3].card.due - t0 > p[2].card.due - t0);
+  assert.equal(p[0].after, '10분');
 });
 
 test('old fixed-interval records keep their due date and become review cards', () => {
@@ -68,14 +69,35 @@ test('daily queue: learning first, then due reviews, then new cards within cours
   assert.deepEqual(q.reviewAll.map(c => c.id), ['rv']);
 });
 
-test('learn-ahead offers a learning card due within 20 minutes when nothing else is left', () => {
+test('no learn-ahead: a learning card is not shown before it is due', () => {
   const card = {id: 'a', course: 'x', src: ['c', 1]};
-  const rec = {fsrs: {due: t0 + 9 * MIN, stability: 1, difficulty: 5, elapsed_days: 0, scheduled_days: 0, learning_steps: 1, reps: 1, lapses: 0, state: 1, last_review: t0 - MIN}};
+  const rec = {fsrs: {due: t0 + 9 * MIN, stability: 1, difficulty: 5, elapsed_days: 0, scheduled_days: 0, learning_steps: 0, reps: 1, lapses: 0, state: 1, last_review: t0 - MIN}};
   const p = R.plan([card], {a: rec}, {}, t0, {course: 'x'});
   assert.equal(p.selected.length, 0);
-  assert.equal(p.nextLearn.id, 'a');
-  const far = {fsrs: {...rec.fsrs, due: t0 + 40 * MIN}};
-  assert.equal(R.plan([card], {a: far}, {}, t0, {course: 'x'}).nextLearn, null);
+  assert.equal(p.nextLearn, null);
+  assert.deepEqual(p.laterLearn.map(c => c.id), ['a']);
+  const now = R.plan([card], {a: rec}, {}, t0 + 9 * MIN, {course: 'x'});
+  assert.deepEqual(now.selected.map(c => c.id), ['a']);
+});
+
+test('a session of new cards never repeats a card answered correctly the same day', () => {
+  const cards = Array.from({length: 12}, (_, i) => ({id: 'c' + i, course: 'x', src: ['ch', i + 1]}));
+  let records = {}, daily = {newIds: [], reviewIds: []}, now = t0;
+  const seen = [];
+  for (;;) {
+    const p = R.plan(cards, records, daily, now, {course: 'x'});
+    const next = p.selected[0] || (p.nextLearn && {id: p.nextLearn.id});
+    if (!next) break;
+    const rating = next.id === 'c3' && !seen.includes('c3') ? 1 : 3;   // miss c3 once
+    const prev = R.stateOf(records[next.id]);
+    records[next.id] = R.apply(records[next.id], R.preview(records[next.id], {}, now).find(c => c.rating === rating), {correct: rating > 1}, now);
+    if (prev === 'new') daily.newIds.push(next.id);
+    seen.push(next.id); now += 30000;
+  }
+  assert.equal(seen.length, 10);                       // 10 new cards, no immediate repeats
+  assert.equal(new Set(seen).size, 10);
+  const later = R.plan(cards, records, daily, now + 10 * MIN, {course: 'x'});
+  assert.deepEqual(later.selected.map(c => c.id), ['c3']);   // only the missed card, after 10 minutes
 });
 
 test('retention is clamped and changes the schedule', () => {

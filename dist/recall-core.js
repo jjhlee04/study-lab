@@ -5,7 +5,7 @@
   'use strict';
   const DAY = 86400000;
   const INTERVALS = [1, 3, 7, 14, 30, 60, 90]; // legacy fixed intervals (kept for old records)
-  const DEFAULTS = Object.freeze({retention: 0.9, newPerDay: 10, reviewsPerDay: 100, learnAheadMinutes: 20, leech: 8});
+  const DEFAULTS = Object.freeze({retention: 0.9, newPerDay: 10, reviewsPerDay: 100, learnAheadMinutes: 0, leech: 8});
   const RATINGS = [
     {value: 1, key: 'again', label: '다시'},
     {value: 2, key: 'hard', label: '어려움'},
@@ -65,7 +65,9 @@
   const schedulers = new Map();
   function scheduler(settings) {
     const params = {request_retention: clampRetention(settings?.retention), maximum_interval: 36500, enable_fuzz: true,
-      enable_short_term: true, learning_steps: ['1m', '10m'], relearning_steps: ['10m']};
+      // One 10-minute step only for misses: a new card answered Good graduates straight to review (days later),
+      // and nothing is shown before it is due (no learn-ahead), so answers are recalled, not copied from minutes ago.
+      enable_short_term: true, learning_steps: ['10m'], relearning_steps: ['10m']};
     const key = JSON.stringify(params);
     if (!schedulers.has(key)) schedulers.set(key, lib().fsrs(params));
     return schedulers.get(key);
