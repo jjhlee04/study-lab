@@ -261,3 +261,11 @@ Page-level Explanation / Source / Quiz links appear beside the page title and at
 ## 학습 완료 일괄 표시 (2026-11-12)
 
 - 어떤 쪽에서 '학습 완료 표시'를 누르면 같은 챕터의 앞쪽(1 ~ n−1)도 모두 학습 완료로 표시합니다. 이미 완료된 쪽은 그대로 두고, 완료 해제는 누른 그 쪽만 바뀝니다. 다른 챕터와 플래너의 '배운 범위'는 바꾸지 않습니다. 퀴즈를 모두 맞혀 자동 완료될 때는 앞쪽을 바꾸지 않습니다.
+
+## 데이터중심머신러닝 07 비지도학습 (2026-11-13, 기말 범위 시작)
+
+- 원문: `07_Data_centric_ML.pptx`(46장)를 LibreOffice로 PDF 변환해 `original/ML-07-unsupervised.pdf`와 쪽 이미지 `pages/ml07-NN.jpg`(1200×676)로 보존. 변환 과정에서 글꼴·위치가 원본 PPT와 조금 다를 수 있습니다. 쪽 번호는 PDF 1~46쪽(슬라이드 아래 원래 번호 22~57과 다름).
+- 원고 `authoring/data-centric-ml/ml07_a~c.py` → `python3 build_ml07.py [원문 PDF]` → `dist/ml-course.js`(과목 `data-centric-ml`, 챕터 `ml07`, 기말 범위 기본 '전체'). 학습 41쪽, 문제 106개, 표지·구분·실습 링크·END 5쪽은 문제 없음. 3·4쪽의 Decision Tree는 이 파일에 자세한 쪽이 없다는 점을 자료 검토로 표시.
+- `dist/exam-bank-ml.js`: 단답 12·참거짓 10·계산 결과 4. 모의고사 기본 구성 선다 15 + 참거짓 5 + 단답 8 + 계산 2. `exam.js` 접두사 `ml`, `recall.js`·`study-tools.js` 과목 이름 추가.
+- 카드 57장(`ml07_cards.py` → `dist/recall-cards-ml07.js`).
+- 원문 모드: 챕터에 `imageRatio`(예: 1200/676)를 주면 아직 불러오지 않은 쪽 이미지 자리를 그 비율로 잡습니다(기본 4/3).

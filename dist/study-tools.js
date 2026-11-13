@@ -11,7 +11,7 @@ state.pages ||= {}; state.questions ||= {}; state.days ||= {};
 const dateKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function save() { if(window.__studyApplyingCloud)return true;try { localStorage.setItem(KEY, JSON.stringify(state)); return true; } catch { notice('기록을 저장하지 못했습니다. 전체 백업 후 저장 공간을 확인하세요.'); return false; } }
 function notice(t) { let n=$('#st-notice'); if(!n){n=document.createElement('p');n.id='st-notice';n.role='status';document.body.append(n);} n.textContent=t;clearTimeout(notice.timeout);notice.timeout=setTimeout(()=>n.textContent='',5000); }
-const names = () => Object.assign({unix:'유닉스 프로그래밍','programming-languages':'프로그래밍언어론','discrete-math':'이산수학','data-communication':'데이터통신'},Object.fromEntries((read('study-library-v1').courses||[]).map(c=>[c.id,c.name])));
+const names = () => Object.assign({unix:'유닉스 프로그래밍','programming-languages':'프로그래밍언어론','discrete-math':'이산수학','data-centric-ml':'데이터중심머신러닝','data-communication':'데이터통신'},Object.fromEntries((read('study-library-v1').courses||[]).map(c=>[c.id,c.name])));
 function pages() {
   const edits=read('course-study-v1').pages||{}, out=[];
   for(const l of window.LESSONS||[]) out.push({id:`unix:unix-${l.unit}:${l.page}`,course:'unix',material:'unix-'+l.unit,n:l.page,title:l.title,href:`#${l.unit}/${l.page}/learn`,recap:(l.explain||[]).join('\n'),trap:'',kind:'lesson'});

@@ -7,7 +7,7 @@
 .cr-source-mode .cr-sheet .cs-source{margin:0;padding:0;border:0;background:transparent}
 .cr-source-mode .cr-sheet .cs-source>:not(a):not([id$="cs-upload-preview"]){display:none!important}
 .cr-source-mode .cr-sheet .cs-source>a{display:block;pointer-events:none;-webkit-touch-callout:none}
-.cr-source-mode .cr-sheet .cs-source img{display:block;width:100%;max-width:none;height:auto;aspect-ratio:auto 4/3;margin:0;border:1px solid #d3dce4;border-radius:4px;background:#fff;box-shadow:0 1px 4px #12283d14}
+.cr-source-mode .cr-sheet .cs-source img{display:block;width:100%;max-width:none;height:auto;aspect-ratio:auto var(--sr-ratio,4/3);margin:0;border:1px solid #d3dce4;border-radius:4px;background:#fff;box-shadow:0 1px 4px #12283d14}
 
 /* 오른쪽 아래: 현재 쪽 / 전체 쪽 + 설명·퀴즈 */
 #sr-pager{position:fixed;right:12px;bottom:calc(64px + env(safe-area-inset-bottom));z-index:66;display:flex;align-items:center;gap:4px;padding:4px;background:#fff;border:1px solid #c3d3de;border-radius:12px;box-shadow:0 3px 14px #12283d26;font:600 15px/1.2 "Pretendard Variable","Malgun Gothic",sans-serif;color:#14304c}

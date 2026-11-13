@@ -20,6 +20,7 @@ function update(){
   const source=CR.view()==='source';
   reader().classList.toggle('cr-source-mode',source);document.body.classList.toggle('sr-source',source);
   if(source)for(const d of reader().querySelectorAll('.cr-sheet .cs-source:not([open])'))d.open=true;
+  reader().style.setProperty('--sr-ratio',chapter()?.imageRatio||'4/3');  // 아직 안 불러온 쪽 이미지 자리(16:9 슬라이드 등)
   pager.hidden=!panel.hidden;$(pager,'.sr-count').textContent=page+' / '+CR.count;
   for(const k of ['explain','quiz'])$(pager,`[data-sr=${k}]`).hidden=!source;
   $(pager,'[data-sr=quiz]').disabled=!hasQuiz(page);$(pager,'[data-sr=source]').hidden=source;

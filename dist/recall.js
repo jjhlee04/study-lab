@@ -5,7 +5,7 @@
   const Core = window.RecallCore, KEY = 'study-recall-v1';
   const $ = (s, r = document) => r.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const names = {unix:'유닉스 프로그래밍', 'programming-languages':'프로그래밍언어론', 'discrete-math':'이산수학', 'data-communication':'데이터통신'};
+  const names = {unix:'유닉스 프로그래밍', 'programming-languages':'프로그래밍언어론', 'discrete-math':'이산수학', 'data-centric-ml':'데이터중심머신러닝', 'data-communication':'데이터통신'};
   let db = {version:1, records:{}, days:{}, sessions:{}, settings:{decks:{}}};
   let stored = null, externalChange = false;
   try { stored = localStorage.getItem(KEY); const data = JSON.parse(stored); if (data?.version === 1 && data.records && data.days && data.sessions) db = data; } catch {}
