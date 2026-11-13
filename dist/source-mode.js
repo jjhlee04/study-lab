@@ -12,7 +12,7 @@ const $=(root,s)=>root.querySelector(s),body=$(panel,'.sr-body');
 let CR=null,page=1,tab='explain',want='explain',shown=0,dirty=false,follow=null;
 
 const reader=()=>document.querySelector('.continuous-reader');
-const ready=()=>{const r=reader();return !!(CR&&CR.count&&r&&r.getClientRects().length&&CR.sheet(1)?.isConnected&&/^#\/course\/[^/]+\/textbook(\/|$)/.test(location.hash));};
+const ready=()=>{const r=reader();return !!(CR&&CR.count&&r&&r.getClientRects().length&&CR.sheet(1)?.isConnected&&/^#\/course\//.test(location.hash));};
 const hasQuiz=n=>!!CR.sheet(n)?.querySelector('[data-original-id="cs-quiz"]');
 const chapter=()=>(window.COURSE_CHAPTERS||[]).find(c=>c.id===CR.chapter);
 function update(){
