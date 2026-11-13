@@ -269,3 +269,11 @@ Page-level Explanation / Source / Quiz links appear beside the page title and at
 - `dist/exam-bank-ml.js`: 단답 12·참거짓 10·계산 결과 4. 모의고사 기본 구성 선다 15 + 참거짓 5 + 단답 8 + 계산 2. `exam.js` 접두사 `ml`, `recall.js`·`study-tools.js` 과목 이름 추가.
 - 카드 57장(`ml07_cards.py` → `dist/recall-cards-ml07.js`).
 - 원문 모드: 챕터에 `imageRatio`(예: 1200/676)를 주면 아직 불러오지 않은 쪽 이미지 자리를 그 비율로 잡습니다(기본 4/3).
+
+## 전 과목 쓰기 복습 카드 추가 (2026-11-13)
+
+- 원고 `authoring/cards/<장>.py`(공용 `common.py`) → `python3 authoring/cards/build.py` → `dist/recall-cards-extra.js`. 직접 고치지 말고 원고를 고친 뒤 다시 생성합니다.
+- 추가 576장: dm05 51 · dm06 68 · dc09 90 · dc10 82 · unix w01 25 · w02 77 · w06 57 · w09 34 · pl07 45 · pl08 47. 모든 카드는 해당 쪽 교재 내용에 근거하고, 표지·구분 쪽에는 두지 않았습니다. 원문과 현대 도구 동작이 다른 쪽(자료 검토 대상)은 확실한 내용만 묻습니다.
+- 검증: 모든 등록 답이 `RecallCore.correct`로 정답 처리되는지, id 중복·기존 카드와 같은 질문·잘못된 쪽(학습 쪽이 아닌 곳)·과목 불일치가 없는지 확인했습니다.
+- 카드는 플래너 '배운 범위'에 든 쪽만, 그리고 선택한 시험 범위(기말 또는 전체) 안에서만 나옵니다. 유닉스 기말 범위는 w09뿐이라 w01·w02·w06 카드는 '전체' 범위에서 보입니다.
+- 이어 읽기: 처음 여는 장·쪽은 마지막으로 쓰던 화면(원문 모드 또는 교재 화면)으로 엽니다(`study-reader-last-view-v1`). 쪽마다 저장한 화면이 있으면 그것을 우선합니다.
